@@ -1,6 +1,7 @@
 import { createStore } from "vuex";
 import { database, ref, onValue } from "../firebase/config";
 import { SPOT_STATUS, FIREBASE_PATHS } from "../constants";
+import auth from "./modules/auth";
 
 /**
  * Default spot data for Floor 1 (Section A)
@@ -77,7 +78,6 @@ function parseFloor(data, floorPath, defaultSpots, target) {
  */
 function parseFirebaseData(snapshot) {
   const data = snapshot.val();
-  console.log(" Firebase raw data:", data);
 
   const bottomFloor = {};
   const topFloor = {};
@@ -190,7 +190,6 @@ export default createStore({
       const garageRef = ref(database, FIREBASE_PATHS.GARAGE_ROOT);
 
       onValue(garageRef, (snapshot) => {
-        console.log("🔥 Firebase listener triggered!");
         const { bottomFloor, topFloor } = parseFirebaseData(snapshot);
         commit("SET_SPOTS", { bottomFloor, topFloor });
         commit("SET_FIREBASE_INITIALIZED", true);
@@ -230,5 +229,5 @@ export default createStore({
       }
     }
   },
-  modules: {}
+  modules: { auth }
 });

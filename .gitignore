@@ -38,3 +38,18 @@ report-*.json
 # Local development files
 todoList.md
 LAST_SESSION.md
+
+# Obscura headless browser binary
+tools/obscura.exe
+tools/obscura-worker.exe
+
+# Chrome DevTools / profiling artifacts
+*.network-request
+*.network-response
+*.heapsnapshot
+*.trace.json
+trace.json.gz
+trace.json
+
+# Temporary screenshots
+*.screenshot.png

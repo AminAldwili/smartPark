@@ -8,5 +8,6 @@ const app = createApp(App);
 app.use(store).use(router);
 
 store.dispatch("initSpots");
+store.dispatch("auth/initAuthListener");
 
 app.mount("#app");

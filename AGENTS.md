@@ -4,8 +4,24 @@
 
 - `npm run serve` - Dev server (Vue CLI)
 - `npm run build` - Production build to `dist/`
-- `npm run test:unit` - Run Jest tests (Vue CLI preset)
+- `npm run test:unit` - Run Jest unit tests (Vue CLI preset)
+- `npm run test:e2e` - Run E2E tests via Obscura + Puppeteer (requires `tools/obscura.exe`, run `npm run serve` first)
 - `npm run lint` - Lint with ESLint + Prettier
+
+## E2E Testing with Obscura + Puppeteer
+
+Obscura (in `tools/`) is a Rust-based headless browser. E2E tests in `tests/e2e/` use `puppeteer-core` connected to Obscura's CDP server.
+
+### Quick Start
+1. `npm run serve` — start the dev server
+2. `npm run test:e2e` — run E2E tests (starts Obscura automatically)
+
+### Install / Update Obscura
+```bash
+# Download latest Windows binary from GitHub releases
+# https://github.com/h4ckf0r0day/obscura/releases
+# Extract obscura.exe and obscura-worker.exe to tools/
+```
 
 ## Architecture
 

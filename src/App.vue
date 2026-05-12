@@ -3,6 +3,7 @@ import { onMounted, watch } from "vue";
 import { useStore } from "vuex";
 import ThemeToggle from "./components/ThemeToggle.vue";
 import GlobalTooltip from "./components/GlobalTooltip.vue";
+import ToastContainer from "./components/ToastContainer.vue";
 
 const store = useStore();
 
@@ -71,7 +72,21 @@ watch(
             <line x1="12" y1="16" x2="12" y2="12" />
             <line x1="12" y1="8" x2="12.01" y2="8" />
           </svg>
-          حول المشروع
+          عن المشروع
+        </router-link>
+        <router-link to="/account">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          الحساب
         </router-link>
         <ThemeToggle />
       </nav>
@@ -80,6 +95,7 @@ watch(
       <router-view />
     </main>
     <GlobalTooltip />
+    <ToastContainer />
   </div>
 </template>
 
@@ -136,8 +152,22 @@ watch(
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.25);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.35);
   --shadow-glow: 0 4px 20px rgba(14, 165, 233, 0.25);
   --shadow-glow-lg: 0 8px 40px rgba(14, 165, 233, 0.35);
+
+  /* ========================================
+     Status Colors
+     ======================================== */
+  --status-success: #10b981;
+  --status-error: #ef4444;
+
+  /* ========================================
+     Backdrop Blur
+     ======================================== */
+  --blur-sm: blur(8px);
+  --blur-md: blur(20px);
+  --blur-lg: blur(40px);
 
   /* ========================================
      Animation System
@@ -249,6 +279,7 @@ watch(
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.12);
   --shadow-glow: 0 4px 20px rgba(2, 132, 199, 0.15);
   --shadow-glow-lg: 0 8px 40px rgba(2, 132, 199, 0.2);
 }

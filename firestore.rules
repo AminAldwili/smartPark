@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if current user is admin
+    function isAdmin() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+    
+    // Helper function to check if user is updating their own document
+    function isOwnDocument(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Users collection rules
+    match /users/{userId} {
+      // Anyone can create an account (signup) — isAdmin forced to false
+      allow create: if isAuthenticated() && request.auth.uid == userId
+        && request.resource.data.isAdmin == false;
+      
+      // Users can read their own document
+      // Admins can read any user document
+      allow read: if isOwnDocument(userId) || isAdmin();
+      
+      // Users can update their own document (except isAdmin field)
+      allow update: if isOwnDocument(userId) && 
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isAdmin']);
+      
+      // Only admins can update isAdmin field
+      allow update: if isAdmin() && 
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isAdmin']);
+      
+      // Only admins can delete users
+      allow delete: if isAdmin();
+    }
+  }
+}
