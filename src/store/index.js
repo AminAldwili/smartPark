@@ -74,28 +74,21 @@ function parseFloor(data, floorPath, defaultSpots, target) {
 /**
  * Parses Firebase snapshot data into floor spot objects.
  * @param {DataSnapshot} snapshot - Firebase data snapshot
- * @returns {{bottomFloor: Object, topFloor: Object, manualGates: Object}} Parsed spot data
+ * @returns {{bottomFloor: Object, topFloor: Object}} Parsed spot data
  */
 function parseFirebaseData(snapshot) {
   const data = snapshot.val();
 
   const bottomFloor = {};
   const topFloor = {};
-  const manualGates = { emergency: 0, entry: 0, exit: 0 };
 
   if (data) {
     parseFloor(data, FIREBASE_PATHS.FLOOR_1, FIREBASE_FLOOR1_SPOTS, bottomFloor);
     parseFloor(data, FIREBASE_PATHS.FLOOR_2, FIREBASE_FLOOR2_SPOTS, bottomFloor);
     parseFloor(data, FIREBASE_PATHS.FLOOR_3, FIREBASE_FLOOR3_SPOTS, topFloor);
-
-    if (data.Manual) {
-      manualGates.emergency = Number(data.Manual.emergency_open) || 0;
-      manualGates.entry = Number(data.Manual.entry_open) || 0;
-      manualGates.exit = Number(data.Manual.exit_open) || 0;
-    }
   }
 
-  return { bottomFloor, topFloor, manualGates };
+  return { bottomFloor, topFloor };
 }
 
 /**
@@ -210,10 +203,19 @@ export default createStore({
       const garageRef = ref(database, FIREBASE_PATHS.GARAGE_ROOT);
 
       onValue(garageRef, (snapshot) => {
-        const { bottomFloor, topFloor, manualGates } = parseFirebaseData(snapshot);
+        const { bottomFloor, topFloor } = parseFirebaseData(snapshot);
         commit("SET_SPOTS", { bottomFloor, topFloor });
-        commit("SET_GATE_STATE", manualGates);
         commit("SET_FIREBASE_INITIALIZED", true);
+      });
+
+      const manualRef = ref(database, FIREBASE_PATHS.MANUAL);
+      onValue(manualRef, (snapshot) => {
+        const data = snapshot.val();
+        commit("SET_GATE_STATE", {
+          emergency: Number(data?.emergency_open) || 0,
+          entry: Number(data?.entry_open) || 0,
+          exit: Number(data?.exit_open) || 0
+        });
       });
     },
 
@@ -256,7 +258,7 @@ export default createStore({
      * @param {Object} payload - {field: string, value: number}
      */
     toggleGate(_, { field, value }) {
-      const gateRef = ref(database, `${FIREBASE_PATHS.GARAGE_ROOT}/${FIREBASE_PATHS.MANUAL}/${field}`);
+      const gateRef = ref(database, `${FIREBASE_PATHS.MANUAL}/${field}`);
       return set(gateRef, value);
     },
 
@@ -266,7 +268,7 @@ export default createStore({
      * @param {number} value - 1 to activate, 0 to deactivate
      */
     toggleEmergency(_, value) {
-      const manualRef = ref(database, `${FIREBASE_PATHS.GARAGE_ROOT}/${FIREBASE_PATHS.MANUAL}`);
+      const manualRef = ref(database, FIREBASE_PATHS.MANUAL);
       return update(manualRef, {
         emergency_open: value,
         entry_open: value,
