@@ -1,5 +1,5 @@
 import { createStore } from "vuex";
-import { database, ref, onValue } from "../firebase/config";
+import { database, ref, onValue, set, update } from "../firebase/config";
 import { SPOT_STATUS, FIREBASE_PATHS } from "../constants";
 import auth from "./modules/auth";
 
@@ -74,21 +74,28 @@ function parseFloor(data, floorPath, defaultSpots, target) {
 /**
  * Parses Firebase snapshot data into floor spot objects.
  * @param {DataSnapshot} snapshot - Firebase data snapshot
- * @returns {{bottomFloor: Object, topFloor: Object}} Parsed spot data
+ * @returns {{bottomFloor: Object, topFloor: Object, manualGates: Object}} Parsed spot data
  */
 function parseFirebaseData(snapshot) {
   const data = snapshot.val();
 
   const bottomFloor = {};
   const topFloor = {};
+  const manualGates = { emergency: 0, entry: 0, exit: 0 };
 
   if (data) {
     parseFloor(data, FIREBASE_PATHS.FLOOR_1, FIREBASE_FLOOR1_SPOTS, bottomFloor);
     parseFloor(data, FIREBASE_PATHS.FLOOR_2, FIREBASE_FLOOR2_SPOTS, bottomFloor);
     parseFloor(data, FIREBASE_PATHS.FLOOR_3, FIREBASE_FLOOR3_SPOTS, topFloor);
+
+    if (data.Manual) {
+      manualGates.emergency = Number(data.Manual.emergency_open) || 0;
+      manualGates.entry = Number(data.Manual.entry_open) || 0;
+      manualGates.exit = Number(data.Manual.exit_open) || 0;
+    }
   }
 
-  return { bottomFloor, topFloor };
+  return { bottomFloor, topFloor, manualGates };
 }
 
 /**
@@ -106,6 +113,7 @@ export default createStore({
       floor1: { ...FIREBASE_FLOOR1_SPOTS, ...FIREBASE_FLOOR2_SPOTS },
       floor2: { ...FIREBASE_FLOOR3_SPOTS }
     },
+    gateState: { emergency: 0, entry: 0, exit: 0 },
     theme: getInitialTheme(),
     firebaseInitialized: false
   },
@@ -132,6 +140,9 @@ export default createStore({
     getSpotStatus: (state) => (floor, spot) => {
       return state.spots[floor]?.[spot] ?? SPOT_STATUS.FREE;
     },
+
+    /** Gate state from Manual/ node */
+    getGateState: (state) => state.gateState,
 
     /** Whether dark theme is active */
     isDark: (state) => state.theme === "dark",
@@ -174,6 +185,15 @@ export default createStore({
      */
     SET_FIREBASE_INITIALIZED(state, value) {
       state.firebaseInitialized = value;
+    },
+
+    /**
+     * Updates gate state from Firebase Manual/ node
+     * @param {Object} state - Store state
+     * @param {Object} gates - {emergency, entry, exit}
+     */
+    SET_GATE_STATE(state, gates) {
+      state.gateState = { ...gates };
     }
   },
 
@@ -190,8 +210,9 @@ export default createStore({
       const garageRef = ref(database, FIREBASE_PATHS.GARAGE_ROOT);
 
       onValue(garageRef, (snapshot) => {
-        const { bottomFloor, topFloor } = parseFirebaseData(snapshot);
+        const { bottomFloor, topFloor, manualGates } = parseFirebaseData(snapshot);
         commit("SET_SPOTS", { bottomFloor, topFloor });
+        commit("SET_GATE_STATE", manualGates);
         commit("SET_FIREBASE_INITIALIZED", true);
       });
     },
@@ -227,6 +248,30 @@ export default createStore({
           dispatch("setTheme", e.matches ? "dark" : "light");
         });
       }
+    },
+
+    /**
+     * Toggles a single gate value in Firebase.
+     * @param {Object} param - {commit} Vuex context
+     * @param {Object} payload - {field: string, value: number}
+     */
+    toggleGate(_, { field, value }) {
+      const gateRef = ref(database, `${FIREBASE_PATHS.GARAGE_ROOT}/${FIREBASE_PATHS.MANUAL}/${field}`);
+      return set(gateRef, value);
+    },
+
+    /**
+     * Toggles emergency mode — opens or closes all gates.
+     * @param {Object} param - {commit} Vuex context
+     * @param {number} value - 1 to activate, 0 to deactivate
+     */
+    toggleEmergency(_, value) {
+      const manualRef = ref(database, `${FIREBASE_PATHS.GARAGE_ROOT}/${FIREBASE_PATHS.MANUAL}`);
+      return update(manualRef, {
+        emergency_open: value,
+        entry_open: value,
+        exit_open: value
+      });
     }
   },
   modules: { auth }

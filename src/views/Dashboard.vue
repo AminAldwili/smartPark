@@ -24,6 +24,7 @@
       </div>
     </div>
 
+    <GateControls />
     <UserDataGrid />
   </div>
 </template>
@@ -32,10 +33,11 @@
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
 import UserDataGrid from "@/components/UserDataGrid.vue";
+import GateControls from "@/components/GateControls.vue";
 
 export default {
   name: "DashboardView",
-  components: { UserDataGrid },
+  components: { UserDataGrid, GateControls },
   setup() {
     const store = useStore();
     const router = useRouter();

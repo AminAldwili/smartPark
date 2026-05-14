@@ -40,12 +40,17 @@ Obscura (in `tools/`) is a Rust-based headless browser. E2E tests in `tests/e2e/
 
 ```
 Garage/
-├── Floor1/  (spots A1-A5)
-├── Floor2/  (spots B1-B5)
-└── Floor3/  (spots C1-C5)
+├── Floor1/     (spots A1-A5)
+├── Floor2/     (spots B1-B5)
+├── Floor3/     (spots C1-C5)
+└── Manual/
+    ├── emergency_open: 0|1
+    ├── entry_open: 0|1
+    └── exit_open: 0|1
 ```
 
 Spot status: `0`=free, `1`=occupied, `2`=reserved, `3`=maintenance
+Gate values: `0`=closed, `1`=open
 
 ## Deployment
 

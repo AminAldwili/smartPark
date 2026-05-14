@@ -130,6 +130,7 @@ export const FLOOR_CONFIG = {
 
 export const FIREBASE_PATHS = {
   GARAGE_ROOT: 'Garage',
+  MANUAL: 'Manual',
   FLOOR_1: 'Floor1',
   FLOOR_2: 'Floor2',
   FLOOR_3: 'Floor3'
