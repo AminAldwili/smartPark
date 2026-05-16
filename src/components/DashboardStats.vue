@@ -30,12 +30,16 @@
 
       <div class="dashboard-stats__card">
         <div class="dashboard-stats__label">البوابات</div>
-        <div class="dashboard-stats__value">
-          <span class="dashboard-stats__gate-count">{{ openGates }}</span>
-          <span class="dashboard-stats__gate-sep">/</span>
-          <span class="dashboard-stats__gate-total">{{ totalGates }}</span>
+        <div class="dashboard-stats__gates">
+          <div class="dashboard-stats__gate" :class="{ 'is-open': gateState.entry }">
+            <span class="dashboard-stats__gate-dot"></span>
+            <span>المدخل</span>
+          </div>
+          <div class="dashboard-stats__gate" :class="{ 'is-open': gateState.exit }">
+            <span class="dashboard-stats__gate-dot"></span>
+            <span>المخرج</span>
+          </div>
         </div>
-        <div class="dashboard-stats__sub">{{ openGates === totalGates ? 'جميع البوابات مفتوحة' : openGates === 0 ? 'جميع البوابات مغلقة' : `${openGates} بوابة مفتوحة` }}</div>
       </div>
     </div>
   </div>
@@ -83,14 +87,7 @@ const formattedTimestamp = computed(() => {
   return d.toLocaleString("ar-SA");
 });
 
-const totalGates = 3;
-const openGates = computed(() => {
-  let count = 0;
-  if (gateState.value.emergency) count++;
-  if (gateState.value.entry) count++;
-  if (gateState.value.exit) count++;
-  return count;
-});
+
 </script>
 
 <style scoped>
@@ -196,21 +193,35 @@ const openGates = computed(() => {
   color: var(--text-tertiary);
 }
 
-.dashboard-stats__gate-count {
-  font-size: var(--text-xl);
-  font-weight: 800;
-  color: var(--status-success);
+.dashboard-stats__gates {
+  display: flex;
+  gap: var(--space-lg);
 }
 
-.dashboard-stats__gate-total {
+.dashboard-stats__gate {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
   font-size: var(--text-sm);
-  font-weight: 600;
   color: var(--text-tertiary);
+  transition: color var(--duration-normal) var(--ease-out);
 }
 
-.dashboard-stats__gate-sep {
-  font-size: var(--text-lg);
-  color: var(--text-tertiary);
+.dashboard-stats__gate.is-open {
+  color: var(--text-primary);
+}
+
+.dashboard-stats__gate-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--status-error);
+  transition: background var(--duration-normal) var(--ease-out);
+  flex-shrink: 0;
+}
+
+.dashboard-stats__gate.is-open .dashboard-stats__gate-dot {
+  background: var(--status-success);
 }
 
 @media (max-width: 768px) {
