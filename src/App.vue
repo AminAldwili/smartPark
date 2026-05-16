@@ -1,11 +1,13 @@
 <script setup>
-import { onMounted, watch } from "vue";
+import { computed, onMounted, watch } from "vue";
 import { useStore } from "vuex";
 import ThemeToggle from "./components/ThemeToggle.vue";
 import GlobalTooltip from "./components/GlobalTooltip.vue";
 import ToastContainer from "./components/ToastContainer.vue";
 
 const store = useStore();
+
+const isAdmin = computed(() => store.getters["auth/isUserAdmin"]);
 
 onMounted(() => {
   store.dispatch("initTheme");
@@ -84,6 +86,15 @@ watch(
             <line x1="12" y1="8" x2="12.01" y2="8" />
           </svg>
           عن المشروع
+        </router-link>
+        <router-link v-if="isAdmin" to="/dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" />
+            <rect x="14" y="3" width="7" height="7" />
+            <rect x="14" y="14" width="7" height="7" />
+            <rect x="3" y="14" width="7" height="7" />
+          </svg>
+          لوحة التحكم
         </router-link>
         <router-link to="/account">
           <svg

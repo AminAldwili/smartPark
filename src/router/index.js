@@ -35,16 +35,10 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = store.getters["auth/isAuthenticated"];
   const isAdmin = store.getters["auth/isUserAdmin"];
 
   if (to.meta.requiresAdmin && !isAdmin) {
     next("/account");
-    return;
-  }
-
-  if (to.path === "/account" && isAuthenticated && isAdmin) {
-    next("/dashboard");
     return;
   }
 
