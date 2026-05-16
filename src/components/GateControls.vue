@@ -116,8 +116,8 @@
             </h4>
             <p>
               {{ confirmAction === 'activate'
-                ? 'سيتم فتح جميع البوابات (الدخول والخروج) فوراً. هل أنت متأكد؟'
-                : 'سيتم إغلاق جميع البوابات (الدخول والخروج) فوراً. هل أنت متأكد؟'
+                ? 'سيتم تفعيل وضع الطوارئ. هل أنت متأكد؟'
+                : 'سيتم إلغاء وضع الطوارئ. هل أنت متأكد؟'
               }}
             </p>
             <div class="gate-controls__modal-actions">
@@ -139,7 +139,7 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, computed } from "vue";
 import { useStore } from "vuex";
 import { useToast } from "@/composables/useToast";
@@ -149,68 +149,53 @@ const GATE_LABELS = {
   exit_open: { on: "تم فتح بوابة الخروج", off: "تم إغلاق بوابة الخروج" }
 };
 
-export default {
-  name: "GateControls",
-  setup() {
-    const store = useStore();
-    const toast = useToast();
-    const showConfirm = ref(false);
-    const confirmAction = ref("");
+const store = useStore();
+const toast = useToast();
+const showConfirm = ref(false);
+const confirmAction = ref("");
 
-    const gateState = computed(() => store.getters.getGateState);
+const gateState = computed(() => store.getters.getGateState);
 
-    async function handleToggle(field, value) {
-      try {
-        await store.dispatch("toggleGate", { field, value });
-        const label = GATE_LABELS[field];
-        if (label) {
-          toast.success(value ? label.on : label.off);
-        }
-      } catch (err) {
-        console.error("Gate toggle error:", err);
-        toast.error("فشل في تنفيذ العملية. الرجاء المحاولة مرة أخرى");
-      }
+async function handleToggle(field, value) {
+  try {
+    await store.dispatch("toggleGate", { field, value });
+    const label = GATE_LABELS[field];
+    if (label) {
+      toast.success(value ? label.on : label.off);
     }
-
-    function handleEmergencyToggle() {
-      const newValue = gateState.value.emergency ? 0 : 1;
-      confirmAction.value = newValue === 1 ? "activate" : "deactivate";
-      showConfirm.value = true;
-    }
-
-    async function confirmEmergency() {
-      const value = confirmAction.value === "activate" ? 1 : 0;
-      try {
-        await store.dispatch("toggleEmergency", value);
-        toast.success(
-          value
-            ? "تم تفعيل وضع الطوارئ وفتح جميع البوابات"
-            : "تم إلغاء وضع الطوارئ وإغلاق جميع البوابات"
-        );
-        showConfirm.value = false;
-        confirmAction.value = "";
-      } catch (err) {
-        console.error("Emergency toggle error:", err);
-        toast.error("فشل في تنفيذ العملية. الرجاء المحاولة مرة أخرى");
-      }
-    }
-
-    function cancelConfirm() {
-      showConfirm.value = false;
-      confirmAction.value = "";
-    }
-
-    return {
-      gateState,
-      showConfirm,
-      confirmAction,
-      handleToggle,
-      handleEmergencyToggle,
-      confirmEmergency,
-      cancelConfirm
-    };
+  } catch (err) {
+    console.error("Gate toggle error:", err);
+    toast.error("فشل في تنفيذ العملية. الرجاء المحاولة مرة أخرى");
   }
-};
+}
+
+function handleEmergencyToggle() {
+  const newValue = gateState.value.emergency ? 0 : 1;
+  confirmAction.value = newValue === 1 ? "activate" : "deactivate";
+  showConfirm.value = true;
+}
+
+async function confirmEmergency() {
+  const value = confirmAction.value === "activate" ? 1 : 0;
+  try {
+    await store.dispatch("toggleEmergency", value);
+    toast.success(
+      value
+        ? "تم تفعيل وضع الطوارئ"
+        : "تم إلغاء وضع الطوارئ"
+    );
+    showConfirm.value = false;
+    confirmAction.value = "";
+  } catch (err) {
+    console.error("Emergency toggle error:", err);
+    toast.error("فشل في تنفيذ العملية. الرجاء المحاولة مرة أخرى");
+  }
+}
+
+function cancelConfirm() {
+  showConfirm.value = false;
+  confirmAction.value = "";
+}
 </script>
 
 <style scoped>

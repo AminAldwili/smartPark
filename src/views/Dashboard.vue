@@ -24,36 +24,32 @@
       </div>
     </div>
 
+    <DashboardStats />
     <GateControls />
+    <SpotControlPanel />
     <UserDataGrid />
   </div>
 </template>
 
-<script>
+<script setup>
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
+import DashboardStats from "@/components/DashboardStats.vue";
 import UserDataGrid from "@/components/UserDataGrid.vue";
 import GateControls from "@/components/GateControls.vue";
+import SpotControlPanel from "@/components/SpotControlPanel.vue";
 
-export default {
-  name: "DashboardView",
-  components: { UserDataGrid, GateControls },
-  setup() {
-    const store = useStore();
-    const router = useRouter();
+const store = useStore();
+const router = useRouter();
 
-    const handleLogout = async () => {
-      await store.dispatch("auth/logout");
-      router.push("/account");
-    };
+async function handleLogout() {
+  await store.dispatch("auth/logout");
+  router.push("/account");
+}
 
-    const goToMain = () => {
-      router.push("/");
-    };
-
-    return { handleLogout, goToMain };
-  }
-};
+function goToMain() {
+  router.push("/");
+}
 </script>
 
 <style scoped>

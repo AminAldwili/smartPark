@@ -11,11 +11,22 @@ onMounted(() => {
   store.dispatch("initTheme");
 });
 
+/**
+ * Meta theme-color for browser UI (address bar, task switcher).
+ */
+const DARK_COLOR = "#0f1419";
+const LIGHT_COLOR = "#f1f5f9";
+
 watch(
   () => store.state.theme,
   (theme) => {
     document.documentElement.classList.remove("dark", "light");
     document.documentElement.classList.add(theme);
+
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) {
+      meta.content = theme === "dark" ? DARK_COLOR : LIGHT_COLOR;
+    }
   },
   { immediate: true },
 );
@@ -290,6 +301,17 @@ watch(
 
 html {
   scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 body {

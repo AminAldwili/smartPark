@@ -1,6 +1,12 @@
-# Parking Project — Setup Guide
+# 🅿️ Smart Parking Management System
 
-Complete guide to replicate this parking management system on a new machine.
+[![Vue 3](https://img.shields.io/badge/Vue-3-4FC08D?logo=vue.js)](https://vuejs.org/)
+[![Firebase](https://img.shields.io/badge/Firebase-12-FFCA28?logo=firebase)](https://firebase.google.com/)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
+Real-time smart parking management with multi-floor visualization, Firebase RTDB sync, path navigation, and admin controls.
+
+> **Live demo**: [https://aminaldwili.github.io/parking-project/](https://aminaldwili.github.io/parking-project/)
 
 ---
 
@@ -276,6 +282,7 @@ parking-project/
 ├── tools/                       # Obscura binaries (gitignored)
 ├── .env.local                   # Firebase config (gitignored)
 ├── vue.config.js                # publicPath: /parking-project/
+├── FEATURES.md                  # Feature roadmap & brainstorm
 ├── package.json
 └── AGENTS.md                    # Full project conventions & architecture
 ```

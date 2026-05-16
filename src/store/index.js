@@ -1,7 +1,55 @@
 import { createStore } from "vuex";
-import { database, ref, onValue, set, update } from "../firebase/config";
-import { SPOT_STATUS, FIREBASE_PATHS } from "../constants";
+import { database, ref, onValue, set, serverTimestamp } from "../firebase/config";
+import { SPOT_STATUS, FIREBASE_PATHS, GATE_STATE } from "../constants";
+import { getFirebasePathFromSpotId } from "../constants";
 import auth from "./modules/auth";
+
+/**
+ * Module-level reference to the prefers-color-scheme MediaQueryList.
+ * Used to attach/detach the system theme change listener.
+ * @type {MediaQueryList|null}
+ */
+let _systemMedia = null;
+
+/**
+ * Stored dispatch reference for system theme change handler.
+ * Set during initTheme, avoids circular dependency.
+ * @type {Function|null}
+ */
+let _dispatch = null;
+
+/**
+ * Handles system theme changes when in "system" mode.
+ * @param {MediaQueryListEvent} e
+ */
+function _onSystemThemeChange(e) {
+  if (_dispatch) {
+    _dispatch("setTheme", e.matches ? "dark" : "light");
+  }
+}
+
+/**
+ * Attaches the prefers-color-scheme change listener.
+ * @param {Function} dispatch - Vuex dispatch
+ */
+function attachSystemListener(dispatch) {
+  if (typeof window === "undefined" || !window.matchMedia) return;
+  detachSystemListener();
+  _dispatch = dispatch;
+  _systemMedia = window.matchMedia("(prefers-color-scheme: dark)");
+  _systemMedia.addEventListener("change", _onSystemThemeChange);
+}
+
+/**
+ * Detaches the prefers-color-scheme change listener.
+ */
+function detachSystemListener() {
+  if (_systemMedia) {
+    _systemMedia.removeEventListener("change", _onSystemThemeChange);
+    _systemMedia = null;
+  }
+  _dispatch = null;
+}
 
 /**
  * Default spot data for Floor 1 (Section A)
@@ -60,13 +108,14 @@ function getInitialTheme() {
  * @param {Object} target - Target object to populate
  * @returns {void}
  */
-function parseFloor(data, floorPath, defaultSpots, target) {
+function parseFloor(data, floorPath, defaultSpots, target, metaTarget) {
   if (data[floorPath]) {
     Object.keys(defaultSpots).forEach(spot => {
       const spotData = data[floorPath][spot];
       target[spot] = (spotData && spotData.status !== undefined)
         ? spotData.status
         : SPOT_STATUS.FREE;
+      metaTarget[spot] = { updatedAt: spotData?.updatedAt ?? null };
     });
   }
 }
@@ -81,14 +130,15 @@ function parseFirebaseData(snapshot) {
 
   const bottomFloor = {};
   const topFloor = {};
+  const meta = { floor1: {}, floor2: {}, floor3: {} };
 
   if (data) {
-    parseFloor(data, FIREBASE_PATHS.FLOOR_1, FIREBASE_FLOOR1_SPOTS, bottomFloor);
-    parseFloor(data, FIREBASE_PATHS.FLOOR_2, FIREBASE_FLOOR2_SPOTS, bottomFloor);
-    parseFloor(data, FIREBASE_PATHS.FLOOR_3, FIREBASE_FLOOR3_SPOTS, topFloor);
+    parseFloor(data, FIREBASE_PATHS.FLOOR_1, FIREBASE_FLOOR1_SPOTS, bottomFloor, meta.floor1);
+    parseFloor(data, FIREBASE_PATHS.FLOOR_2, FIREBASE_FLOOR2_SPOTS, bottomFloor, meta.floor2);
+    parseFloor(data, FIREBASE_PATHS.FLOOR_3, FIREBASE_FLOOR3_SPOTS, topFloor, meta.floor3);
   }
 
-  return { bottomFloor, topFloor };
+  return { bottomFloor, topFloor, meta };
 }
 
 /**
@@ -106,9 +156,13 @@ export default createStore({
       floor1: { ...FIREBASE_FLOOR1_SPOTS, ...FIREBASE_FLOOR2_SPOTS },
       floor2: { ...FIREBASE_FLOOR3_SPOTS }
     },
-    gateState: { emergency: 0, entry: 0, exit: 0 },
+    gateState: { emergency: GATE_STATE.CLOSED, entry: GATE_STATE.CLOSED, exit: GATE_STATE.CLOSED },
     theme: getInitialTheme(),
-    firebaseInitialized: false
+    firebaseInitialized: false,
+    isUpdatingSpot: false,
+    themeMode: "system",
+    spotMeta: { floor1: {}, floor2: {}, floor3: {} },
+    lastUpdated: null
   },
 
   /**
@@ -144,7 +198,29 @@ export default createStore({
     currentTheme: (state) => state.theme,
 
     /** Whether Firebase is connected */
-    isFirebaseInitialized: (state) => state.firebaseInitialized
+    isFirebaseInitialized: (state) => state.firebaseInitialized,
+
+    /** Whether a spot status update is in progress */
+    isUpdatingSpot: (state) => state.isUpdatingSpot,
+
+    /** Current theme mode: "system" | "dark" | "light" */
+    themeMode: (state) => state.themeMode,
+
+    /** Per-spot metadata (updatedAt timestamps) */
+    getSpotMeta: (state) => state.spotMeta,
+
+    /** Global last updated timestamp */
+    getLastUpdated: (state) => state.lastUpdated,
+
+    /**
+     * Get elapsed duration for a spot in milliseconds.
+     * Returns null if no updatedAt available.
+     */
+    getSpotDuration: (state) => (floorIndex, spotId) => {
+      const meta = state.spotMeta[`floor${floorIndex}`]?.[spotId];
+      if (!meta?.updatedAt) return null;
+      return Date.now() - meta.updatedAt;
+    }
   },
 
   /**
@@ -171,6 +247,10 @@ export default createStore({
       state.theme = theme;
     },
 
+    SET_THEME_MODE(state, mode) {
+      state.themeMode = mode;
+    },
+
     /**
      * Sets Firebase initialization flag
      * @param {Object} state - Store state
@@ -187,6 +267,18 @@ export default createStore({
      */
     SET_GATE_STATE(state, gates) {
       state.gateState = { ...gates };
+    },
+
+    SET_UPDATING_SPOT(state, value) {
+      state.isUpdatingSpot = value;
+    },
+
+    SET_SPOT_META(state, meta) {
+      state.spotMeta = { ...meta };
+    },
+
+    SET_LAST_UPDATED(state, timestamp) {
+      state.lastUpdated = timestamp;
     }
   },
 
@@ -203,8 +295,18 @@ export default createStore({
       const garageRef = ref(database, FIREBASE_PATHS.GARAGE_ROOT);
 
       onValue(garageRef, (snapshot) => {
-        const { bottomFloor, topFloor } = parseFirebaseData(snapshot);
+        const { bottomFloor, topFloor, meta } = parseFirebaseData(snapshot);
         commit("SET_SPOTS", { bottomFloor, topFloor });
+        commit("SET_SPOT_META", meta);
+        let lastUpdated = null;
+        Object.values(meta).forEach(floor => {
+          Object.values(floor).forEach(spot => {
+            if (spot.updatedAt && (!lastUpdated || spot.updatedAt > lastUpdated)) {
+              lastUpdated = spot.updatedAt;
+            }
+          });
+        });
+        commit("SET_LAST_UPDATED", lastUpdated);
         commit("SET_FIREBASE_INITIALIZED", true);
       });
 
@@ -220,16 +322,28 @@ export default createStore({
     },
 
     /**
-     * Toggles between dark and light theme
-     * @param {Object} param - {commit, state} Vuex context
+     * Cycles theme mode: system → dark → light → system.
+     * In "system" mode, follows prefers-color-scheme.
+     * In "dark"/"light", forces theme and disables system listener.
+     * @param {Object} param - {commit, state, dispatch} Vuex context
      */
-    toggleTheme({ commit, state }) {
-      const newTheme = state.theme === "dark" ? "light" : "dark";
-      commit("SET_THEME", newTheme);
+    toggleTheme({ commit, state, dispatch }) {
+      const MODE_CYCLE = { system: "dark", dark: "light", light: "system" };
+      const nextMode = MODE_CYCLE[state.themeMode] || "system";
+      commit("SET_THEME_MODE", nextMode);
+
+      if (nextMode === "system") {
+        attachSystemListener(dispatch);
+        const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        commit("SET_THEME", systemDark ? "dark" : "light");
+      } else {
+        detachSystemListener();
+        commit("SET_THEME", nextMode);
+      }
     },
 
     /**
-     * Sets specific theme
+     * Sets specific theme (used by system listener).
      * @param {Object} param - {commit} Vuex context
      * @param {string} theme - Theme name
      */
@@ -238,18 +352,15 @@ export default createStore({
     },
 
     /**
-     * Initializes theme from system preference
+     * Initializes theme from system preference.
+     * Starts in "system" mode.
      * @param {Object} param - {commit, dispatch} Vuex context
      */
     initTheme({ commit, dispatch }) {
       const theme = getInitialTheme();
       commit("SET_THEME", theme);
-      if (typeof window !== "undefined" && window.matchMedia) {
-        const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-        mediaQuery.addEventListener("change", (e) => {
-          dispatch("setTheme", e.matches ? "dark" : "light");
-        });
-      }
+      commit("SET_THEME_MODE", "system");
+      attachSystemListener(dispatch);
     },
 
     /**
@@ -268,12 +379,43 @@ export default createStore({
      * @param {number} value - 1 to activate, 0 to deactivate
      */
     toggleEmergency(_, value) {
-      const manualRef = ref(database, FIREBASE_PATHS.MANUAL);
-      return update(manualRef, {
-        emergency_open: value,
-        entry_open: value,
-        exit_open: value
-      });
+      const emergencyRef = ref(database, `${FIREBASE_PATHS.MANUAL}/emergency_open`);
+      return set(emergencyRef, value);
+    },
+
+    /**
+     * Updates a single spot's status in Firebase.
+     * Derives Firebase floor path from spot ID prefix (A→Floor1, B→Floor2, C→Floor3).
+     * @param {Object} param - {commit} Vuex context
+     * @param {Object} payload - { spotId: string, status: number }
+     * @returns {Promise} Firebase set promise
+     */
+    updateSpotStatus({ commit }, { spotId, status }) {
+      if (!Object.values(SPOT_STATUS).includes(status)) {
+        return Promise.reject(new Error(`Invalid status: ${status}`));
+      }
+
+      const firebaseFloor = getFirebasePathFromSpotId(spotId);
+      if (!firebaseFloor) {
+        return Promise.reject(new Error(`Unknown spot prefix: ${spotId.charAt(0)}`));
+      }
+
+      commit("SET_UPDATING_SPOT", true);
+
+      const spotRef = ref(
+        database,
+        `${FIREBASE_PATHS.GARAGE_ROOT}/${firebaseFloor}/${spotId}`
+      );
+
+      return set(spotRef, { status, updatedAt: serverTimestamp() })
+        .then(() => {
+          commit("SET_UPDATING_SPOT", false);
+        })
+        .catch((error) => {
+          commit("SET_UPDATING_SPOT", false);
+          console.error("updateSpotStatus error:", error);
+          throw error;
+        });
     }
   },
   modules: { auth }

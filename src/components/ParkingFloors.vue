@@ -140,7 +140,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
 import { useStore } from "vuex";
 import ParkingFloor from "@/components/ParkingFloor.vue";
 import PathDrawer from "@/components/PathDrawer.vue";
@@ -153,7 +153,7 @@ import {
   SPOT_STATUS_CHECK_DELAY_MS,
   getFloorFromSpotId
 } from "@/constants";
-import { useResizeObserver, useWindowResize } from "@/composables/useElementSize";
+import { useResizeObserver } from "@/composables/useElementSize";
 
 /**
  * Main parking layout component.
@@ -197,60 +197,31 @@ const yPositions = buildYPositions(FLOOR_CONFIG.SPOTS_PER_ROW);
  * Reactive spots array for floor 1 (A & B sections)
  * @type {import('vue').Reactive<Array>}
  */
-const floor1Spots = reactive([]);
+const floor1Spots = ref([]);
+const floor2Spots = ref([]);
 
-/**
- * Reactive spots array for floor 2 (C section)
- * @type {import('vue').Reactive<Array>}
- */
-const floor2Spots = reactive([]);
-
-/**
- * Updates spots from Vuex store to local reactive arrays.
- * Converts store object format to array format for v-for rendering.
- * @returns {void}
- */
-function updateSpotsFromStore() {
-  const floor1 = floor1SpotsFromStore.value;
-  const floor2 = floor2SpotsFromStore.value;
-
-  floor1Spots.splice(0, floor1Spots.length);
-  floor2Spots.splice(0, floor2Spots.length);
-
-  Object.keys(floor1).forEach((spotId) => {
-    const section = spotId.charAt(0);
-    const idx = parseInt(spotId.replace(section, "")) - 1;
-    const x = section === "A" ? 75 : 25;
-    floor1Spots.push({
-      id: spotId,
-      x,
-      y: yPositions[idx],
-      section,
-      status: floor1[spotId] ?? SPOT_STATUS.FREE,
-    });
-  });
-
-  Object.keys(floor2).forEach((spotId) => {
-    const idx = parseInt(spotId.replace("C", "")) - 1;
-    floor2Spots.push({
-      id: spotId,
-      x: 75,
-      y: yPositions[idx],
-      section: "C",
-      status: floor2[spotId] ?? SPOT_STATUS.FREE,
-    });
+function buildSpotArray(spotsMap, mapper) {
+  return Object.keys(spotsMap).map((spotId) => {
+    const idx = parseInt(spotId.replace(spotId.charAt(0), "")) - 1;
+    return { id: spotId, y: yPositions[idx], status: spotsMap[spotId] ?? SPOT_STATUS.FREE, ...mapper(spotId) };
   });
 }
 
-/**
- * Watch for store changes and update local spots
- */
+function updateSpotsFromStore() {
+  floor1Spots.value = buildSpotArray(floor1SpotsFromStore.value, (spotId) => ({
+    section: spotId.charAt(0),
+    x: spotId.charAt(0) === "A" ? 75 : 25
+  }));
+  floor2Spots.value = buildSpotArray(floor2SpotsFromStore.value, () => ({
+    section: "C",
+    x: 75
+  }));
+}
+
 watch(
   () => [floor1SpotsFromStore.value, floor2SpotsFromStore.value],
-  () => {
-    updateSpotsFromStore();
-  },
-  { immediate: true, deep: true }
+  () => { updateSpotsFromStore(); },
+  { immediate: true }
 );
 
 /**
@@ -326,9 +297,23 @@ watch(activeSpotId, (newSpotId) => {
   }, SPOT_STATUS_CHECK_DELAY_MS);
 });
 
+function getSpotCenterInFloor(floorElement, spotId) {
+  const spotWrapper = floorElement.querySelector(`[data-spot-id="${spotId}"]`);
+  if (!spotWrapper) return null;
+  const spotCard = spotWrapper.querySelector('.spot-card');
+  if (!spotCard) return null;
+
+  const floorRect = floorElement.getBoundingClientRect();
+  const spotRect = spotCard.getBoundingClientRect();
+
+  return {
+    x: spotRect.left - floorRect.left + spotRect.width / 2,
+    y: spotRect.top - floorRect.top + spotRect.height / 2,
+  };
+}
+
 function scrollToSpot(spotId) {
   if (!spotId) return;
-
   activeSpotId.value = spotId;
 
   const targetFloor = getFloorFromSpotId(spotId);
@@ -343,25 +328,14 @@ function scrollToSpot(spotId) {
       const floorElement = targetFloor === 1 ? firstFloorBox.value : secondFloorBox.value;
       if (!floorElement) return;
 
-      const spotWrapper = floorElement.querySelector(`[data-spot-id="${spotId}"]`);
-      if (!spotWrapper) return;
-
-      const spotCard = spotWrapper.querySelector('.spot-card');
-      if (!spotCard) return;
-
-      const floorRect = floorElement.getBoundingClientRect();
-      const spotRect = spotCard.getBoundingClientRect();
-
-      const spotCenter = {
-        x: spotRect.left - floorRect.left + spotRect.width / 2,
-        y: spotRect.top - floorRect.top + spotRect.height / 2,
-      };
+      const spotCenter = getSpotCenterInFloor(floorElement, spotId);
+      if (!spotCenter) return;
 
       handleRequestPath({
         floor: targetFloor,
-        floorRect: floorRect,
-        spotCenter: spotCenter,
-        aisleXPercent: aisleXPercent
+        floorRect: floorElement.getBoundingClientRect(),
+        spotCenter,
+        aisleXPercent
       });
     }, SPOT_SCROLL_DELAY_MS);
   });
@@ -387,12 +361,27 @@ function updateRampRect() {
   });
 }
 
-/**
- * Calculates path coordinates and sets active path.
- * Path: L-shape from entry point to clicked spot.
- * @param {Object} payload - Path request payload
- * @returns {void}
- */
+function clearPathTimeout() {
+  if (clearTimer.value) clearTimeout(clearTimer.value);
+  clearTimer.value = setTimeout(() => {
+    activePath.value = null;
+    clearTimer.value = null;
+  }, PATH_TIMEOUT_MS);
+}
+
+function computePathCoords(payload, containerRect, floorRectData) {
+  return {
+    start: {
+      x: floorRectData.left - containerRect.left + (aisleXPercent / 100) * floorRectData.width,
+      y: floorRectData.bottom - containerRect.top - 18,
+    },
+    end: {
+      x: payload.floorRect.left - containerRect.left + payload.spotCenter.x,
+      y: payload.floorRect.top - containerRect.top + payload.spotCenter.y,
+    }
+  };
+}
+
 function handleRequestPath(payload) {
   if (!containerSize.value.width || !containerSize.value.height) {
     updateContainerSize();
@@ -402,44 +391,20 @@ function handleRequestPath(payload) {
   const floorRectData = firstFloorBox.value?.getBoundingClientRect();
   updateRampRect();
 
-  if (
-    !containerRect ||
-    !floorRectData ||
-    !payload.floorRect ||
-    !payload.spotCenter
-  ) {
-    return;
-  }
+  if (!containerRect || !floorRectData || !payload.floorRect || !payload.spotCenter) return;
 
-  const end = {
-    x: payload.floorRect.left - containerRect.left + payload.spotCenter.x,
-    y: payload.floorRect.top - containerRect.top + payload.spotCenter.y,
-  };
-
-  const start = {
-    x:
-      floorRectData.left -
-      containerRect.left +
-      (aisleXPercent / 100) * floorRectData.width,
-    y: floorRectData.bottom - containerRect.top - 18,
-  };
-
-  const targetFloor = payload.floor;
+  const { start, end } = computePathCoords(payload, containerRect, floorRectData);
 
   activePath.value = {
     start,
     end,
     aisleXPercent: payload.aisleXPercent,
-    targetFloor,
+    targetFloor: payload.floor,
     rampRect: rampRect.value,
     containerRect,
   };
 
-  if (clearTimer.value) clearTimeout(clearTimer.value);
-  clearTimer.value = setTimeout(() => {
-    activePath.value = null;
-    clearTimer.value = null;
-  }, PATH_TIMEOUT_MS);
+  clearPathTimeout();
 }
 
 onMounted(() => {
@@ -450,11 +415,6 @@ onMounted(() => {
 });
 
 useResizeObserver(container, () => {
-  updateContainerSize();
-  updateRampRect();
-});
-
-useWindowResize(() => {
   updateContainerSize();
   updateRampRect();
 });
@@ -954,5 +914,17 @@ onUnmounted(() => {
   display: flex;
   justify-content: center;
   padding: var(--space-md) 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-origin-dot {
+    animation: none;
+  }
+  .route-origin-anchor {
+    animation: none;
+  }
+  .ramp-connector.ramp-active .ramp-center-line {
+    animation: none;
+  }
 }
 </style>

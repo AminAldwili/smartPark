@@ -5,6 +5,8 @@ import { useStore } from "vuex";
 const store = useStore();
 
 const isDark = computed(() => store.getters.isDark);
+const themeMode = computed(() => store.getters.themeMode);
+const isSystem = computed(() => themeMode.value === "system");
 
 function toggleTheme() {
   store.dispatch("toggleTheme");
@@ -14,11 +16,46 @@ function toggleTheme() {
 <template>
   <button
     class="theme-toggle"
-    :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+    :aria-label="
+      isSystem
+        ? 'الوضع التلقائي'
+        : isDark
+          ? 'الوضع الداكن'
+          : 'الوضع الفاتح'
+    "
     @click="toggleTheme"
   >
+    <!-- System / Auto -->
     <svg
-      v-if="isDark"
+      v-if="isSystem"
+      class="icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <rect x="2" y="3" width="20" height="14" rx="2" />
+      <line x1="8" y1="21" x2="16" y2="21" />
+      <line x1="12" y1="17" x2="12" y2="21" />
+    </svg>
+    <!-- Dark -->
+    <svg
+      v-else-if="isDark"
+      class="icon moon"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
+    <!-- Light -->
+    <svg
+      v-else
       class="icon sun"
       viewBox="0 0 24 24"
       fill="none"
@@ -36,18 +73,6 @@ function toggleTheme() {
       <line x1="21" y1="12" x2="23" y2="12" />
       <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
       <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-    </svg>
-    <svg
-      v-else
-      class="icon moon"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    >
-      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
     </svg>
   </button>
 </template>

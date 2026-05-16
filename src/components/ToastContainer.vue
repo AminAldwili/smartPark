@@ -34,16 +34,9 @@
   </Teleport>
 </template>
 
-<script>
+<script setup>
 import { useToast } from "@/composables/useToast";
-
-export default {
-  name: "ToastContainer",
-  setup() {
-    const { toasts, removeToast } = useToast();
-    return { toasts, removeToast };
-  }
-};
+const { toasts, removeToast } = useToast();
 </script>
 
 <style>

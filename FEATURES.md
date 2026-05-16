@@ -1,6 +1,9 @@
-# Feature Brainstorm
+# Roadmap
 
-Potential features for the parking project, grouped by impact and scope.
+Living feature roadmap for the parking project, grouped by impact and scope.
+Mark `[x]` as features are implemented.
+
+**Progress:** ▰▰▰▰▰▰▰▰▰▰▰▱▱▱▱▱▱ 0/17 (0%)
 
 ---
 
@@ -33,7 +36,3 @@ Potential features for the parking project, grouped by impact and scope.
 - [ ] **Spot favorites** — Save frequently used spots for quick navigation
 - [ ] **Entry/exit gate animations** — Visual feedback on the floor layout when gates open/close
 - [ ] **Guest mode** — Browse without login (currently works, but a deliberate guest entry flow)
-
----
-
-*Checklist format — mark `[x]` as features are implemented.*

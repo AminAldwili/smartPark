@@ -1,6 +1,7 @@
 <template>
   <div class="account-view">
-    <div class="auth-card">
+    <!-- Login / Signup -->
+    <div v-if="!showProfile" class="auth-card">
       <div class="auth-header">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
@@ -66,137 +67,435 @@
         </button>
       </div>
     </div>
+
+    <!-- Profile -->
+    <div v-else class="profile-card">
+      <!-- Verification banner -->
+      <div v-if="!isEmailVerified" class="verification-banner" role="alert">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          <polyline points="9,12 11,14 15,10" />
+        </svg>
+        <span>لم يتم تأكيد بريدك الإلكتروني بعد</span>
+        <button
+          :disabled="isSendingVerification"
+          class="resend-btn"
+          @click="resendVerification"
+        >
+          {{ isSendingVerification ? "جاري الإرسال..." : "إعادة إرسال التأكيد" }}
+        </button>
+      </div>
+
+      <!-- Profile header -->
+      <div class="profile-header">
+        <div class="profile-avatar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+        </div>
+        <div class="profile-info">
+          <h2>{{ displayName || "مستخدم" }}</h2>
+          <p>{{ userEmail }}</p>
+          <span v-if="isAdmin" class="admin-badge">مدير</span>
+          <span v-if="!isEmailVerified" class="unverified-badge">غير مؤكد</span>
+        </div>
+      </div>
+
+      <!-- Error message -->
+      <div v-if="profileError" class="error-message" role="alert">
+        {{ profileErrorMessage }}
+      </div>
+
+      <!-- Edit name -->
+      <div class="profile-section">
+        <h3 class="section-title">الاسم</h3>
+        <div class="input-row">
+          <input
+            v-model="nameInput"
+            type="text"
+            class="profile-input"
+            placeholder="أدخل اسمك"
+            :disabled="isUpdatingProfile"
+          />
+          <button
+            class="save-btn"
+            :disabled="isUpdatingProfile || !nameInput.trim() || nameInput === displayName"
+            @click="saveName"
+          >
+            <span v-if="isUpdatingProfile" class="spinner-sm"></span>
+            <span v-else>حفظ</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Edit email -->
+      <div class="profile-section">
+        <h3 class="section-title">البريد الإلكتروني</h3>
+        <div class="input-row">
+          <input
+            v-model="emailInput"
+            type="email"
+            class="profile-input"
+            placeholder="example@email.com"
+            :disabled="isUpdatingProfile"
+          />
+        </div>
+        <div class="input-row">
+          <input
+            v-model="emailPassword"
+            type="password"
+            class="profile-input"
+            placeholder="كلمة المرور الحالية (للتأكيد)"
+            :disabled="isUpdatingProfile"
+          />
+          <button
+            class="save-btn"
+            :disabled="isUpdatingProfile || !emailInput.trim() || !emailPassword"
+            @click="saveEmail"
+          >
+            <span v-if="isUpdatingProfile" class="spinner-sm"></span>
+            <span v-else>حفظ</span>
+          </button>
+        </div>
+        <p class="section-hint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="16" x2="12" y2="12" />
+            <line x1="12" y1="8" x2="12.01" y2="8" />
+          </svg>
+          سيتم إرسال رابط تأكيد إلى البريد الجديد
+        </p>
+      </div>
+
+      <!-- Change password -->
+      <div class="profile-section">
+        <h3 class="section-title">تغيير كلمة المرور</h3>
+        <div class="input-group">
+          <input
+            v-model="passwordCurrent"
+            type="password"
+            class="profile-input"
+            placeholder="كلمة المرور الحالية"
+            :disabled="isUpdatingProfile"
+          />
+          <input
+            v-model="passwordNew"
+            type="password"
+            class="profile-input"
+            placeholder="كلمة المرور الجديدة"
+            :disabled="isUpdatingProfile"
+          />
+          <input
+            v-model="passwordConfirm"
+            type="password"
+            class="profile-input"
+            :class="{ 'has-error': passwordError }"
+            placeholder="تأكيد كلمة المرور الجديدة"
+            :disabled="isUpdatingProfile"
+          />
+          <span v-if="passwordError" class="field-error">{{ passwordError }}</span>
+          <button
+            class="save-btn"
+            :disabled="isUpdatingProfile || !passwordCurrent || !passwordNew || !passwordConfirm"
+            @click="savePassword"
+          >
+            <span v-if="isUpdatingProfile" class="spinner-sm"></span>
+            <span v-else>تحديث كلمة المرور</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Delete account -->
+      <div class="profile-section is-danger">
+        <h3 class="section-title">حذف الحساب</h3>
+        <p class="section-desc">بعد الحذف لا يمكن استعادة بياناتك</p>
+        <button class="delete-btn" @click="openDeleteModal">حذف الحساب</button>
+      </div>
+
+      <!-- Logout -->
+      <button class="logout-btn" @click="handleLogout">تسجيل الخروج</button>
+    </div>
+
+    <!-- Delete confirmation modal -->
+    <Teleport to="body">
+      <Transition name="modal-fade">
+        <div v-if="showDeleteModal" class="modal-overlay" @click.self="cancelDelete">
+          <div class="modal-card" role="alertdialog" aria-labelledby="delete-title">
+            <div class="modal-icon is-danger">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+            </div>
+            <h4 id="delete-title">حذف الحساب</h4>
+            <p>سيتم حذف جميع بياناتك نهائياً. أدخل كلمة المرور للتأكيد.</p>
+            <div class="modal-input-row">
+              <input
+                v-model="deletePassword"
+                type="password"
+                class="profile-input"
+                placeholder="كلمة المرور"
+                :disabled="isUpdatingProfile"
+                @keydown.enter="confirmDelete"
+              />
+            </div>
+            <div v-if="deleteError" class="field-error" style="text-align:center;margin-bottom:var(--space-md)">
+              {{ deleteError }}
+            </div>
+            <div class="modal-actions">
+              <button class="modal-btn modal-btn--cancel" @click="cancelDelete">إلغاء</button>
+              <button
+                class="modal-btn modal-btn--danger"
+                :disabled="isUpdatingProfile || !deletePassword"
+                @click="confirmDelete"
+              >
+                <span v-if="isUpdatingProfile" class="spinner-sm"></span>
+                <span v-else>تأكيد الحذف</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, computed, watch } from "vue";
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
 import { getAuthErrorMessage } from "@/constants/ERROR_MESSAGES";
 import { useToast } from "@/composables/useToast";
 
-export default {
-  name: "AccountView",
-  setup() {
-    const store = useStore();
-    const router = useRouter();
-    const toast = useToast();
+const store = useStore();
+const router = useRouter();
+const toast = useToast();
 
-    const isLogin = ref(true);
-    const isLoading = computed(() => store.getters["auth/isAuthLoading"]);
-    const error = computed(() => store.getters["auth/authError"]);
-    const isAdmin = computed(() => store.getters["auth/isUserAdmin"]);
-    const isAuthenticated = computed(() => store.getters["auth/isAuthenticated"]);
+const isLogin = ref(true);
+const form = ref({ name: "", email: "", password: "" });
+const errors = ref({ name: "", email: "", password: "" });
 
-    const form = ref({
-      name: "",
-      email: "",
-      password: ""
-    });
+const nameInput = ref("");
+const emailInput = ref("");
+const emailPassword = ref("");
+const passwordCurrent = ref("");
+const passwordNew = ref("");
+const passwordConfirm = ref("");
+const passwordError = ref("");
+const deletePassword = ref("");
+const deleteError = ref("");
+const showDeleteModal = ref(false);
+const isSendingVerification = ref(false);
 
-    const errors = ref({
-      name: "",
-      email: "",
-      password: ""
-    });
+const isLoading = computed(() => store.getters["auth/isAuthLoading"]);
+const isUpdatingProfile = computed(() => store.getters["auth/isUpdatingProfile"]);
+const isAuthenticated = computed(() => store.getters["auth/isAuthenticated"]);
+const isAdmin = computed(() => store.getters["auth/isUserAdmin"]);
+const error = computed(() => store.getters["auth/authError"]);
+const displayName = computed(() => store.getters["auth/userDisplayName"]);
+const userEmail = computed(() => store.getters["auth/userEmail"]);
+const isEmailVerified = computed(() => store.getters["auth/userEmailVerified"]);
+const profileError = computed(() => store.getters["auth/authError"]);
 
-    const errorMessage = computed(() => {
-      if (!error.value) return "";
-      return getAuthErrorMessage(error.value);
-    });
+const showProfile = computed(() => isAuthenticated.value && !isLoading.value);
 
-    const toggleMode = () => {
-      isLogin.value = !isLogin.value;
-      store.dispatch("auth/clearError");
-      clearForm();
-    };
+const errorMessage = computed(() => {
+  if (!error.value) return "";
+  return getAuthErrorMessage(error.value);
+});
 
-    const clearForm = () => {
-      form.value = { name: "", email: "", password: "" };
-      errors.value = { name: "", email: "", password: "" };
-    };
+const profileErrorMessage = computed(() => {
+  if (!profileError.value) return "";
+  return getAuthErrorMessage(profileError.value);
+});
 
-    const validate = () => {
-      let isValid = true;
-      errors.value = { name: "", email: "", password: "" };
-
-      if (!isLogin.value && !form.value.name.trim()) {
-        errors.value.name = "الاسم مطلوب";
-        isValid = false;
-      }
-
-      if (!form.value.email.trim()) {
-        errors.value.email = "البريد الإلكتروني مطلوب";
-        isValid = false;
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.email)) {
-        errors.value.email = "البريد الإلكتروني غير صالح";
-        isValid = false;
-      }
-
-      if (!form.value.password) {
-        errors.value.password = "كلمة المرور مطلوبة";
-        isValid = false;
-      } else if (form.value.password.length < 6) {
-        errors.value.password = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
-        isValid = false;
-      }
-
-      return isValid;
-    };
-
-    const handleSubmit = async () => {
-      if (!validate()) return;
-
-      try {
-        if (isLogin.value) {
-          await store.dispatch("auth/login", {
-            email: form.value.email,
-            password: form.value.password
-          });
-
-          if (store.getters["auth/isUserAdmin"]) {
-            router.push("/dashboard");
-          } else {
-            toast.success("تم تسجيل الدخول بنجاح");
-            router.push("/");
-          }
-        } else {
-          await store.dispatch("auth/signup", {
-            email: form.value.email,
-            password: form.value.password,
-            name: form.value.name
-          });
-
-          if (store.getters["auth/isUserAdmin"]) {
-            router.push("/dashboard");
-          } else {
-            toast.success("تم إنشاء الحساب بنجاح");
-            router.push("/");
-          }
-        }
-      } catch (err) {
-        // Error already handled by store
-      }
-    };
-
-    watch(isAuthenticated, (val) => {
-      if (!val) return;
-      router.push(isAdmin.value ? "/dashboard" : "/");
-    });
-
-    return {
-      isLogin,
-      isLoading,
-      error,
-      errorMessage,
-      form,
-      errors,
-      toggleMode,
-      handleSubmit
-    };
+watch(showProfile, (val) => {
+  if (val) {
+    nameInput.value = displayName.value;
+    emailInput.value = userEmail.value;
   }
-};
+});
+
+function toggleMode() {
+  isLogin.value = !isLogin.value;
+  store.dispatch("auth/clearError");
+  clearForm();
+}
+
+function clearForm() {
+  form.value = { name: "", email: "", password: "" };
+  errors.value = { name: "", email: "", password: "" };
+}
+
+function validate() {
+  let isValid = true;
+  errors.value = { name: "", email: "", password: "" };
+
+  if (!isLogin.value && !form.value.name.trim()) {
+    errors.value.name = "الاسم مطلوب";
+    isValid = false;
+  }
+
+  if (!form.value.email.trim()) {
+    errors.value.email = "البريد الإلكتروني مطلوب";
+    isValid = false;
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.email)) {
+    errors.value.email = "البريد الإلكتروني غير صالح";
+    isValid = false;
+  }
+
+  if (!form.value.password) {
+    errors.value.password = "كلمة المرور مطلوبة";
+    isValid = false;
+  } else if (form.value.password.length < 6) {
+    errors.value.password = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
+    isValid = false;
+  }
+
+  return isValid;
+}
+
+function redirectIfAdmin() {
+  if (store.getters["auth/isUserAdmin"]) {
+    router.push("/dashboard");
+  }
+}
+
+async function handleLogin() {
+  await store.dispatch("auth/login", {
+    email: form.value.email,
+    password: form.value.password
+  });
+  redirectIfAdmin();
+  if (!store.getters["auth/isUserAdmin"]) {
+    toast.success("تم تسجيل الدخول بنجاح");
+  }
+}
+
+async function handleSignup() {
+  await store.dispatch("auth/signup", {
+    email: form.value.email,
+    password: form.value.password,
+    name: form.value.name
+  });
+  redirectIfAdmin();
+  if (!store.getters["auth/isUserAdmin"]) {
+    toast.success("تم إنشاء الحساب بنجاح. تحقق من بريدك الإلكتروني للتأكيد.");
+  }
+}
+
+async function handleSubmit() {
+  if (!validate()) return;
+  if (isLogin.value) {
+    await handleLogin();
+  } else {
+    await handleSignup();
+  }
+}
+
+async function saveName() {
+  const name = nameInput.value.trim();
+  if (!name || name === displayName.value) return;
+
+  try {
+    await store.dispatch("auth/updateProfileName", { name });
+    toast.success("تم تحديث الاسم بنجاح");
+  } catch (err) {
+    toast.error("فشل تحديث الاسم");
+  }
+}
+
+async function saveEmail() {
+  const newEmail = emailInput.value.trim();
+  if (!newEmail || !emailPassword.value) return;
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+    toast.error("البريد الإلكتروني غير صالح");
+    return;
+  }
+
+  try {
+    await store.dispatch("auth/updateProfileEmail", {
+      newEmail,
+      password: emailPassword.value
+    });
+    emailPassword.value = "";
+    toast.success("تم إرسال رابط التأكيد إلى البريد الجديد");
+  } catch (err) {
+    toast.error("فشل تحديث البريد الإلكتروني");
+  }
+}
+
+async function savePassword() {
+  passwordError.value = "";
+
+  if (!passwordCurrent.value || !passwordNew.value || !passwordConfirm.value) return;
+  if (passwordNew.value.length < 6) {
+    passwordError.value = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
+    return;
+  }
+  if (passwordNew.value !== passwordConfirm.value) {
+    passwordError.value = "كلمة المرور غير متطابقة";
+    return;
+  }
+
+  try {
+    await store.dispatch("auth/updateProfilePassword", {
+      currentPassword: passwordCurrent.value,
+      newPassword: passwordNew.value
+    });
+    passwordCurrent.value = "";
+    passwordNew.value = "";
+    passwordConfirm.value = "";
+    toast.success("تم تحديث كلمة المرور بنجاح");
+  } catch (err) {
+    toast.error("فشل تحديث كلمة المرور");
+  }
+}
+
+async function resendVerification() {
+  isSendingVerification.value = true;
+  try {
+    await store.dispatch("auth/sendVerificationEmail");
+    toast.success("تم إرسال رابط التأكيد");
+  } catch (err) {
+    toast.error("فشل إرسال رابط التأكيد");
+  }
+  isSendingVerification.value = false;
+}
+
+function openDeleteModal() {
+  deletePassword.value = "";
+  deleteError.value = "";
+  showDeleteModal.value = true;
+}
+
+function cancelDelete() {
+  showDeleteModal.value = false;
+  deletePassword.value = "";
+  deleteError.value = "";
+}
+
+async function confirmDelete() {
+  if (!deletePassword.value) return;
+  deleteError.value = "";
+
+  try {
+    await store.dispatch("auth/deleteAccount", { password: deletePassword.value });
+    toast.success("تم حذف الحساب");
+    showDeleteModal.value = false;
+    router.push("/");
+  } catch (err) {
+    deleteError.value = getAuthErrorMessage(store.getters["auth/authError"]);
+  }
+}
+
+async function handleLogout() {
+  await store.dispatch("auth/logout");
+  router.push("/account");
+}
 </script>
 
 <style scoped>
@@ -208,6 +507,7 @@ export default {
   padding: var(--space-lg);
 }
 
+/* ========== Auth Card (unchanged) ========== */
 .auth-card {
   width: 100%;
   max-width: 420px;
@@ -262,7 +562,8 @@ export default {
   color: var(--text-primary);
 }
 
-.form-group input {
+.form-group input,
+.profile-input {
   padding: var(--space-md);
   border-radius: var(--radius-md);
   border: 1px solid var(--glass-border);
@@ -272,17 +573,20 @@ export default {
   transition: border-color var(--duration-fast) var(--ease-out);
 }
 
-.form-group input::placeholder {
+.form-group input::placeholder,
+.profile-input::placeholder {
   color: var(--text-secondary);
   opacity: 0.6;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.profile-input:focus {
   outline: none;
   border-color: var(--accent-primary);
 }
 
-.form-group input.has-error {
+.form-group input.has-error,
+.profile-input.has-error {
   border-color: var(--status-error);
 }
 
@@ -338,6 +642,15 @@ export default {
   animation: spin 0.8s linear infinite;
 }
 
+.spinner-sm {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top-color: var(--asphalt-base);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -360,5 +673,428 @@ export default {
 
 .toggle-btn:hover {
   color: var(--accent-secondary);
+}
+
+/* ========== Profile Card ========== */
+.profile-card {
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+/* Verification banner */
+.verification-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: var(--accent-gold);
+  font-size: var(--text-sm);
+  flex-wrap: wrap;
+}
+
+.verification-banner svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.resend-btn {
+  background: none;
+  border: none;
+  color: var(--accent-gold-light);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.resend-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Header */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  padding: var(--space-xl);
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg);
+  backdrop-filter: var(--blur-md);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-lg);
+}
+
+.profile-avatar {
+  width: clamp(56px, 12vw, 72px);
+  height: clamp(56px, 12vw, 72px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--accent-glow);
+  border: 2px solid var(--aisle-border);
+  color: var(--accent-primary);
+  flex-shrink: 0;
+}
+
+.profile-avatar svg {
+  width: 55%;
+  height: 55%;
+}
+
+.profile-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-info h2 {
+  margin: 0 0 var(--space-2xs);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.profile-info p {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.admin-badge,
+.unverified-badge {
+  display: inline-block;
+  padding: 2px var(--space-sm);
+  border-radius: 999px;
+  font-size: var(--text-2xs);
+  font-weight: 600;
+}
+
+.admin-badge {
+  background: var(--accent-glow);
+  color: var(--accent-primary);
+  border: 1px solid var(--aisle-border);
+}
+
+.unverified-badge {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--accent-gold);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* Sections */
+.profile-section {
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg);
+  backdrop-filter: var(--blur-md);
+  border: 1px solid var(--glass-border);
+}
+
+.section-title {
+  margin: 0 0 var(--space-md);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.input-row {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.input-row .profile-input {
+  flex: 1;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.save-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--accent-primary);
+  color: var(--asphalt-base);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.save-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.save-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.section-hint {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin: var(--space-sm) 0 0;
+  font-size: var(--text-2xs);
+  color: var(--text-tertiary);
+}
+
+.section-hint svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* Danger zone */
+.profile-section.is-danger {
+  border-color: rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.04);
+}
+
+.profile-section.is-danger .section-title {
+  color: var(--status-error);
+}
+
+.section-desc {
+  margin: 0 0 var(--space-md);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.delete-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--status-error);
+  background: transparent;
+  color: var(--status-error);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.delete-btn:hover {
+  background: var(--status-error);
+  color: #fff;
+}
+
+/* Logout */
+.logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.logout-btn:hover {
+  color: var(--status-error);
+  border-color: var(--status-error);
+}
+
+/* ========== Modal ========== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  padding: var(--space-lg);
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 400px;
+  padding: var(--space-xl);
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg);
+  backdrop-filter: var(--blur-lg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-xl);
+  text-align: center;
+}
+
+.modal-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(48px, 10vw, 64px);
+  height: clamp(48px, 10vw, 64px);
+  margin: 0 auto var(--space-lg);
+  border-radius: 50%;
+}
+
+.modal-icon svg {
+  width: 50%;
+  height: 50%;
+}
+
+.modal-icon.is-danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--status-error);
+}
+
+.modal-card h4 {
+  margin: 0 0 var(--space-sm);
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.modal-card p {
+  margin: 0 0 var(--space-lg);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.modal-input-row {
+  margin-bottom: var(--space-md);
+}
+
+.modal-input-row .profile-input {
+  width: 100%;
+}
+
+.modal-actions {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.modal-btn {
+  flex: 1;
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.modal-btn:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.modal-btn--cancel {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.modal-btn--cancel:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.modal-btn--danger {
+  background: var(--status-error);
+  color: white;
+  border-color: var(--status-error);
+}
+
+.modal-btn--danger:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+.modal-btn--danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Modal transition */
+.modal-fade-enter-active {
+  transition: opacity var(--duration-slow) var(--ease-out);
+}
+
+.modal-fade-leave-active {
+  transition: opacity var(--duration-normal) var(--ease-out);
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
+.modal-fade-enter-active .modal-card {
+  transition: transform var(--duration-slow) var(--ease-spring);
+}
+
+.modal-fade-leave-active .modal-card {
+  transition: transform var(--duration-normal) var(--ease-out);
+}
+
+.modal-fade-enter-from .modal-card,
+.modal-fade-leave-to .modal-card {
+  transform: scale(0.9);
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 768px) {
+  .profile-card {
+    max-width: 100%;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .input-row {
+    flex-direction: column;
+  }
+
+  .save-btn {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .submit-btn,
+  .save-btn,
+  .delete-btn,
+  .modal-card,
+  .modal-overlay {
+    transition: none;
+  }
+
+  .modal-fade-enter-active,
+  .modal-fade-leave-active {
+    transition: none;
+  }
 }
 </style>

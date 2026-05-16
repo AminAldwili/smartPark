@@ -84,35 +84,31 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted, nextTick } from "vue";
 import { useSpotFromUrl } from "@/composables/useSpotFromUrl";
 import ParkingFloors from "@/components/ParkingFloors.vue";
 
-export default {
-  name: "HomeView",
-  components: { ParkingFloors },
-  setup() {
-    const { cleanSpotId, hasSlotParam } = useSpotFromUrl();
-    return { cleanSpotId, hasSlotParam };
-  },
-  mounted() {
-    this.$nextTick(() => {
-      if (this.hasSlotParam && this.cleanSpotId) {
-        setTimeout(() => {
-          const floorsComponent = this.$refs.floors;
-          if (floorsComponent?.scrollToSpot) {
-            floorsComponent.scrollToSpot(this.cleanSpotId);
-          }
-        }, 1000);
-      } else {
-        const floors = this.$refs.floors?.$el;
-        if (floors && floors.scrollIntoView) {
-          floors.scrollIntoView({ behavior: "smooth", block: "end" });
+const { cleanSpotId, hasSlotParam } = useSpotFromUrl();
+const floors = ref(null);
+
+onMounted(() => {
+  nextTick(() => {
+    if (hasSlotParam.value && cleanSpotId.value) {
+      setTimeout(() => {
+        const floorsComponent = floors.value;
+        if (floorsComponent?.scrollToSpot) {
+          floorsComponent.scrollToSpot(cleanSpotId.value);
         }
+      }, 1000);
+    } else {
+      const el = floors.value?.$el;
+      if (el && el.scrollIntoView) {
+        el.scrollIntoView({ behavior: "smooth", block: "end" });
       }
-    });
-  },
-};
+    }
+  });
+});
 </script>
 
 <style scoped>
@@ -330,6 +326,12 @@ export default {
 @media (max-width: 480px) {
   .hero-stats {
     gap: var(--space-sm);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stat-icon.pulse {
+    animation: none;
   }
 }
 </style>

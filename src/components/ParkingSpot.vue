@@ -408,247 +408,6 @@ onUnmounted(() => {
   box-shadow: var(--status-light-hover-shadow);
 }
 
-.is-free .spot-indicator {
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
-}
-
-.is-free .indicator-glow {
-  background: var(--spot-free);
-}
-
-.is-free:hover,
-.is-free:focus-visible,
-.is-free.is-hovered {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow:
-    var(--shadow-lg),
-    0 0 20px rgba(16, 185, 129, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
-}
-
-.is-free:hover .spot-indicator,
-.is-free:focus-visible .spot-indicator {
-  box-shadow: 0 0 16px rgba(16, 185, 129, 0.8);
-}
-
-.is-free:hover .indicator-glow,
-.is-free:focus-visible .indicator-glow {
-  animation: indicator-blink 1s ease-in-out infinite;
-}
-
-.is-occupied {
-  background: linear-gradient(145deg, var(--spot-occupied), #dc2626);
-  color: #fff;
-  box-shadow:
-    var(--shadow-sm),
-    0 0 0 1px rgba(239, 68, 68, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.is-occupied .spot-indicator {
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
-}
-
-.is-occupied .indicator-glow {
-  background: var(--spot-occupied);
-}
-
-.is-occupied:hover,
-.is-occupied:focus-visible,
-.is-occupied.is-hovered {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow:
-    var(--shadow-lg),
-    0 0 20px rgba(239, 68, 68, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
-}
-
-.is-occupied:hover .spot-indicator,
-.is-occupied:focus-visible .spot-indicator {
-  box-shadow: 0 0 16px rgba(239, 68, 68, 0.8);
-}
-
-.is-occupied:hover .indicator-glow,
-.is-occupied:focus-visible .indicator-glow {
-  animation: indicator-blink 1s ease-in-out infinite;
-}
-
-@keyframes indicator-blink {
-  0%,
-  100% {
-    opacity: 0;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.5;
-    transform: scale(2);
-  }
-}
-
-.is-reserved {
-  background: linear-gradient(145deg, var(--spot-reserved), #f97316);
-  color: #fff;
-  box-shadow:
-    var(--shadow-sm),
-    0 0 0 1px rgba(249, 115, 22, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.is-reserved .spot-indicator {
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 0 8px rgba(249, 115, 22, 0.6);
-}
-
-.is-reserved .indicator-glow {
-  background: var(--spot-reserved);
-}
-
-.is-reserved:hover,
-.is-reserved:focus-visible,
-.is-reserved.is-hovered {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow:
-    var(--shadow-lg),
-    0 0 20px rgba(249, 115, 22, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
-}
-
-.is-reserved:hover .spot-indicator,
-.is-reserved:focus-visible .spot-indicator {
-  box-shadow: 0 0 16px rgba(249, 115, 22, 0.8);
-}
-
-.is-reserved:hover .indicator-glow,
-.is-reserved:focus-visible .indicator-glow {
-  animation: indicator-blink 1s ease-in-out infinite;
-}
-
-.is-maintenance {
-  background: linear-gradient(145deg, var(--spot-maintenance), #6b7280);
-  color: #fff;
-  box-shadow:
-    var(--shadow-sm),
-    0 0 0 1px rgba(107, 114, 128, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.is-maintenance .spot-indicator {
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 0 8px rgba(107, 114, 128, 0.6);
-}
-
-.is-maintenance .indicator-glow {
-  background: var(--spot-maintenance);
-}
-
-.is-maintenance:hover,
-.is-maintenance:focus-visible,
-.is-maintenance.is-hovered {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow:
-    var(--shadow-lg),
-    0 0 20px rgba(107, 114, 128, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
-}
-
-.is-maintenance:hover .spot-indicator,
-.is-maintenance:focus-visible .spot-indicator {
-  box-shadow: 0 0 16px rgba(107, 114, 128, 0.8);
-}
-
-.is-maintenance:hover .indicator-glow,
-.is-maintenance:focus-visible .indicator-glow {
-  animation: indicator-blink 1s ease-in-out infinite;
-}
-
-@media (max-width: 768px) {
-  .spot-indicator {
-    width: clamp(6px, 1.5vw, 8px);
-    height: clamp(6px, 1.5vw, 8px);
-  }
-}
-
-@media (max-width: 480px) {
-  .spot-card {
-    border-radius: clamp(6px, 1.5vw, 8px);
-    min-width: clamp(44px, 12vw, 50px);
-    min-height: clamp(44px, 12vw, 50px);
-  }
-
-  .spot-indicator {
-    width: clamp(5px, 1.2vw, 6px);
-    height: clamp(5px, 1.2vw, 6px);
-    bottom: clamp(2px, 0.8vw, 4px);
-    right: clamp(2px, 0.8vw, 4px);
-  }
-}
-
-:root.light .is-free {
-  box-shadow:
-    0 4px 16px rgba(5, 150, 105, 0.15),
-    0 2px 4px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-}
-
-:root.light .is-free:hover,
-:root.light .is-free:focus-visible,
-:root.light .is-free.is-hovered {
-  box-shadow:
-    0 12px 32px rgba(5, 150, 105, 0.2),
-    0 4px 8px rgba(0, 0, 0, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
-}
-
-:root.light .is-occupied {
-  box-shadow:
-    0 4px 16px rgba(220, 38, 38, 0.12),
-    0 2px 4px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-}
-
-:root.light .is-occupied:hover,
-:root.light .is-occupied:focus-visible,
-:root.light .is-occupied.is-hovered {
-  box-shadow:
-    0 12px 32px rgba(220, 38, 38, 0.18),
-    0 4px 8px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
-}
-
-:root.light .is-reserved {
-  box-shadow:
-    0 4px 16px rgba(249, 115, 22, 0.15),
-    0 2px 4px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-}
-
-:root.light .is-reserved:hover,
-:root.light .is-reserved:focus-visible,
-:root.light .is-reserved.is-hovered {
-  box-shadow:
-    0 12px 32px rgba(249, 115, 22, 0.2),
-    0 4px 8px rgba(0, 0, 0, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
-}
-
-:root.light .is-maintenance {
-  box-shadow:
-    0 4px 16px rgba(107, 114, 128, 0.12),
-    0 2px 4px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-}
-
-:root.light .is-maintenance:hover,
-:root.light .is-maintenance:focus-visible,
-:root.light .is-maintenance.is-hovered {
-  box-shadow:
-    0 12px 32px rgba(107, 114, 128, 0.18),
-    0 4px 8px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
-}
-
 .spot-card.is-active {
   animation: spot-active-pulse 1.5s ease-in-out infinite;
   box-shadow:
@@ -680,6 +439,24 @@ onUnmounted(() => {
   }
   50% {
     opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spot-card {
+    transition: none;
+  }
+  .is-active {
+    animation: none;
+  }
+  .is-active::after {
+    animation: none;
+  }
+  .is-free:hover .indicator-glow,
+  .is-occupied:hover .indicator-glow,
+  .is-reserved:hover .indicator-glow,
+  .is-maintenance:hover .indicator-glow {
+    animation: none;
   }
 }
 </style>

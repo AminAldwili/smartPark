@@ -136,6 +136,28 @@ export const FIREBASE_PATHS = {
   FLOOR_3: 'Floor3'
 }
 
+/** Gate state values */
+export const GATE_STATE = {
+  CLOSED: 0,
+  OPEN: 1
+}
+
+/**
+ * Maps spot ID prefix to Firebase floor path.
+ * A → Floor1, B → Floor2, C → Floor3
+ * @param {string} spotId - Spot identifier (e.g. "A1", "B3", "C5")
+ * @returns {string|null} Firebase floor path, or null if unrecognized
+ */
+export function getFirebasePathFromSpotId(spotId) {
+  const prefix = spotId.charAt(0).toUpperCase()
+  const MAP = {
+    A: FIREBASE_PATHS.FLOOR_1,
+    B: FIREBASE_PATHS.FLOOR_2,
+    C: FIREBASE_PATHS.FLOOR_3
+  }
+  return MAP[prefix] || null
+}
+
 // ============================================================================
 // Spot Utilities
 // ============================================================================

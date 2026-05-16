@@ -7,8 +7,16 @@
       name="viewport"
       content="width=device-width,initial-scale=1.0,viewport-fit=cover"
     />
-    <meta name="theme-color" content="#0f0f1a" />
+    <meta name="theme-color" content="#0f1419" />
+    <meta property="og:title" content="لوحة إدارة المواقف | Smart Parking" />
+    <meta property="og:description" content="نظام إدارة مواقف ذكي مع تتبع المسار وعرض الحالة في الوقت الفعلي" />
+    <meta property="og:image" content="<%= BASE_URL %>app_icon.png" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" href="<%= BASE_URL %>favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="<%= BASE_URL %>favicon.svg" />
+    <link rel="apple-touch-icon" href="<%= BASE_URL %>app_icon.png" />
+    <link rel="manifest" href="<%= BASE_URL %>site.webmanifest" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -16,6 +24,15 @@
       rel="stylesheet"
     />
     <title><%= htmlWebpackPlugin.options.title %></title>
+    <script>
+      (function () {
+        var redirect = sessionStorage.redirect;
+        delete sessionStorage.redirect;
+        if (redirect && redirect !== location.pathname) {
+          history.replaceState(null, "", redirect);
+        }
+      })();
+    </script>
   </head>
   <body>
     <noscript>

@@ -74,90 +74,56 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, computed, onMounted } from "vue";
 import { useStore } from "vuex";
-import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
-import { firestore } from "@/firebase/config";
+import { useToast } from "@/composables/useToast";
 
-const USERS_COLLECTION = "users";
+const store = useStore();
+const toast = useToast();
 
-export default {
-  name: "UserDataGrid",
-  setup() {
-    const store = useStore();
+const searchQuery = ref("");
 
-    const users = ref([]);
-    const isLoading = ref(true);
-    const error = ref(null);
-    const searchQuery = ref("");
+const currentUserId = computed(() => store.getters["auth/currentUser"]?.uid);
+const users = computed(() => store.getters["auth/allUsers"]);
+const isLoading = computed(() => store.getters["auth/isUsersLoading"]);
+const error = computed(() => store.getters["auth/usersError"]);
 
-    const currentUserId = computed(() => store.getters["auth/currentUser"]?.uid);
+const filteredUsers = computed(() => {
+  if (!searchQuery.value.trim()) return users.value;
 
-    const filteredUsers = computed(() => {
-      if (!searchQuery.value.trim()) return users.value;
+  const query = searchQuery.value.toLowerCase().trim();
+  return users.value.filter(
+    (user) =>
+      user.name?.toLowerCase().includes(query) ||
+      user.email?.toLowerCase().includes(query)
+  );
+});
 
-      const query = searchQuery.value.toLowerCase().trim();
-      return users.value.filter(
-        (user) =>
-          user.name?.toLowerCase().includes(query) ||
-          user.email?.toLowerCase().includes(query)
-      );
-    });
-
-    const fetchUsers = async () => {
-      isLoading.value = true;
-      error.value = null;
-
-      try {
-        const querySnapshot = await getDocs(collection(firestore, USERS_COLLECTION));
-        users.value = querySnapshot.docs.map((doc) => ({
-          uid: doc.id,
-          ...doc.data()
-        }));
-      } catch (err) {
-        console.error("Error fetching users:", err);
-        error.value = "حدث خطأ أثناء تحميل البيانات";
-      } finally {
-        isLoading.value = false;
-      }
-    };
-
-    const toggleAdmin = async (user, event) => {
-      const newIsAdmin = event.target.checked;
-
-      try {
-        await updateDoc(doc(firestore, USERS_COLLECTION, user.uid), {
-          isAdmin: newIsAdmin
-        });
-
-        const userIndex = users.value.findIndex((u) => u.uid === user.uid);
-        if (userIndex !== -1) {
-          users.value[userIndex].isAdmin = newIsAdmin;
-        }
-      } catch (err) {
-        console.error("Error updating admin status:", err);
-        error.value = "حدث خطأ أثناء تحديث الصلاحيات";
-        event.target.checked = !newIsAdmin;
-      }
-    };
-
-    onMounted(() => {
-      fetchUsers();
-    });
-
-    return {
-      users,
-      isLoading,
-      error,
-      searchQuery,
-      filteredUsers,
-      currentUserId,
-      fetchUsers,
-      toggleAdmin
-    };
+async function fetchUsers() {
+  try {
+    await store.dispatch("auth/fetchUsers");
+    toast.success("تم تحميل المستخدمين");
+  } catch {
+    toast.error("حدث خطأ أثناء تحميل البيانات");
   }
-};
+}
+
+async function toggleAdmin(user, event) {
+  const newIsAdmin = event.target.checked;
+
+  try {
+    await store.dispatch("auth/toggleAdmin", { user, isAdmin: newIsAdmin });
+    toast.success("تم تحديث صلاحيات المستخدم");
+  } catch {
+    event.target.checked = !newIsAdmin;
+    toast.error("فشل تحديث الصلاحيات");
+  }
+}
+
+onMounted(() => {
+  fetchUsers();
+});
 </script>
 
 <style scoped>
