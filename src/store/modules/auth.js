@@ -169,6 +169,11 @@ const actions = {
   },
 
   async initAuthListener({ commit, dispatch }) {
+    if (!auth) {
+      commit("SET_LOADING", false);
+      return Promise.resolve(null);
+    }
+
     return new Promise((resolve) => {
       authUnsubscribe = onAuthStateChanged(auth, async (user) => {
         if (user) {
@@ -308,7 +313,7 @@ const actions = {
       commit("SET_USERS_LOADING", false);
       return users;
     } catch (err) {
-      commit("SET_USERS_ERROR", "حدث خطأ أثناء تحميل البيانات");
+      commit("SET_USERS_ERROR", "errors.dataLoadError");
       commit("SET_USERS_LOADING", false);
       console.error("Error fetching users:", err);
       throw err;
@@ -321,7 +326,7 @@ const actions = {
       commit("SET_USERS_ERROR", null);
       commit("UPDATE_USER", { uid: user.uid, updates: { isAdmin } });
     } catch (err) {
-      commit("SET_USERS_ERROR", "حدث خطأ أثناء تحديث الصلاحيات");
+      commit("SET_USERS_ERROR", "errors.permissionUpdateError");
       console.error("Error updating admin status:", err);
       throw err;
     }

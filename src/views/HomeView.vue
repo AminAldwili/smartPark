@@ -12,16 +12,13 @@
               d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h1v2c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-2h1c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7z"
             />
           </svg>
-          <span>Smart Parking Flow</span>
+          <span>{{ $t('home.badge') }}</span>
         </div>
-        <h2>اختيار الموقف صار أوضح وأسرع</h2>
-        <p>
-          اضغط على أي موقف ليظهر لك المسار المنطلق من أعلى منتصف الدور الأول إلى
-          موقع الموقف المختار مباشرة.
-        </p>
+        <h2>{{ $t('home.heading') }}</h2>
+        <p>{{ $t('home.description') }}</p>
       </div>
 
-      <div class="hero-stats" aria-label="Parking summary">
+      <div class="hero-stats" :aria-label="$t('home.statsAria')">
         <div class="stat-chip">
           <div class="stat-icon">
             <svg
@@ -37,7 +34,7 @@
             </svg>
           </div>
           <strong>2</strong>
-          <span>أدوار</span>
+          <span>{{ $t('home.statFloors') }}</span>
         </div>
         <div class="stat-chip">
           <div class="stat-icon">
@@ -54,7 +51,7 @@
             </svg>
           </div>
           <strong>15</strong>
-          <span>موقف</span>
+          <span>{{ $t('home.statSpots') }}</span>
         </div>
         <div class="stat-chip accent">
           <div class="stat-icon pulse">
@@ -70,8 +67,8 @@
               <polyline points="12,6 12,12 16,14" />
             </svg>
           </div>
-          <strong>مسار</strong>
-          <span>تتبع فوري</span>
+          <strong>{{ $t('home.statPath') }}</strong>
+          <span>{{ $t('home.statPathLabel') }}</span>
         </div>
       </div>
 
@@ -174,7 +171,7 @@ onMounted(() => {
   background: var(--accent-glow);
   border: 1px solid var(--aisle-border);
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--accent-primary);
 }
 

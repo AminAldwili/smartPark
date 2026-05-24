@@ -2,8 +2,8 @@
   <div class="dashboard-view">
     <div class="dashboard-header">
       <div class="header-content">
-        <h2>لوحة التحكم</h2>
-        <p>إدارة المستخدمين وصلاحياتهم</p>
+        <h2>{{ $t('dashboard.heading') }}</h2>
+        <p>{{ $t('dashboard.subtitle') }}</p>
       </div>
       <div class="header-actions">
         <button @click="goToMain" class="back-btn">
@@ -11,7 +11,7 @@
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
             <polyline points="9,22 9,12 15,12 15,22" />
           </svg>
-          الرئيسية
+          {{ $t('dashboard.back') }}
         </button>
         <button @click="handleLogout" class="logout-btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -19,7 +19,7 @@
             <polyline points="16,17 21,12 16,7" />
             <line x1="21" y1="12" x2="9" y2="12" />
           </svg>
-          تسجيل الخروج
+          {{ $t('dashboard.logout') }}
         </button>
       </div>
     </div>
@@ -102,7 +102,7 @@ function goToMain() {
   background: var(--asphalt-base);
   color: var(--text-primary);
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease-out);
 }

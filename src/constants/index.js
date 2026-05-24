@@ -53,12 +53,12 @@ export const SPOT_STATUS = {
   MAINTENANCE: 3
 }
 
-/** Status label mapping - Arabic */
-export const SPOT_LABELS = {
-  [SPOT_STATUS.FREE]: 'متاحة',
-  [SPOT_STATUS.OCCUPIED]: 'مشغولة',
-  [SPOT_STATUS.RESERVED]: 'محجوز',
-  [SPOT_STATUS.MAINTENANCE]: 'صيانة'
+/** Status label i18n key mapping */
+export const SPOT_LABEL_KEYS = {
+  [SPOT_STATUS.FREE]: 'spot.free',
+  [SPOT_STATUS.OCCUPIED]: 'spot.occupied',
+  [SPOT_STATUS.RESERVED]: 'spot.reserved',
+  [SPOT_STATUS.MAINTENANCE]: 'spot.maintenance'
 }
 
 /** Status CSS class mapping */

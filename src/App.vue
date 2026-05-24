@@ -1,16 +1,22 @@
 <script setup>
 import { computed, onMounted, watch } from "vue";
 import { useStore } from "vuex";
+import { useI18n } from "vue-i18n";
 import ThemeToggle from "./components/ThemeToggle.vue";
+import LanguageToggle from "./components/LanguageToggle.vue";
 import GlobalTooltip from "./components/GlobalTooltip.vue";
 import ToastContainer from "./components/ToastContainer.vue";
 
 const store = useStore();
+const { t } = useI18n();
 
 const isAdmin = computed(() => store.getters["auth/isUserAdmin"]);
+const firebaseError = computed(() => store.getters.hasFirebaseError);
+const currentLocale = computed(() => store.getters.currentLocale);
 
 onMounted(() => {
   store.dispatch("initTheme");
+  applyLocale(currentLocale.value);
 });
 
 /**
@@ -29,6 +35,20 @@ watch(
     if (meta) {
       meta.content = theme === "dark" ? DARK_COLOR : LIGHT_COLOR;
     }
+  },
+  { immediate: true },
+);
+
+function applyLocale(locale) {
+  document.documentElement.setAttribute("dir", locale === "ar" ? "rtl" : "ltr");
+  document.documentElement.setAttribute("lang", locale === "ar" ? "ar" : "en");
+}
+
+watch(
+  () => store.state.locale,
+  (locale) => {
+    applyLocale(locale);
+    document.title = t("meta.title");
   },
   { immediate: true },
 );
@@ -53,11 +73,11 @@ watch(
           </svg>
         </div>
         <div class="brand-text">
-          <span class="brand-kicker">Smart Parking</span>
-          <h1>لوحة إدارة المواقف</h1>
+          <span class="brand-kicker">{{ $t('brand.kicker') }}</span>
+          <h1>{{ $t('brand.title') }}</h1>
         </div>
       </div>
-      <nav class="nav-links" aria-label="Main navigation">
+      <nav class="nav-links" :aria-label="$t('nav.mainAria')">
         <router-link to="/">
           <svg
             viewBox="0 0 24 24"
@@ -70,48 +90,28 @@ watch(
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
             <polyline points="9,22 9,12 15,12 15,22" />
           </svg>
-          الرئيسية
+          {{ $t('nav.home') }}
         </router-link>
         <router-link to="/about">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="16" x2="12" y2="12" />
-            <line x1="12" y1="8" x2="12.01" y2="8" />
-          </svg>
-          عن المشروع
+          {{ $t('nav.about') }}
         </router-link>
         <router-link v-if="isAdmin" to="/dashboard">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="7" height="7" />
-            <rect x="14" y="3" width="7" height="7" />
-            <rect x="14" y="14" width="7" height="7" />
-            <rect x="3" y="14" width="7" height="7" />
-          </svg>
-          لوحة التحكم
+          {{ $t('nav.dashboard') }}
         </router-link>
         <router-link to="/account">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-          الحساب
+          {{ $t('nav.account') }}
         </router-link>
+        <LanguageToggle />
         <ThemeToggle />
       </nav>
+      <div v-if="firebaseError" class="firebase-banner" role="alert">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        <span>{{ $t('firebase.banner') }}</span>
+      </div>
     </header>
     <main class="page-content">
       <router-view />
@@ -177,12 +177,15 @@ watch(
   --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.35);
   --shadow-glow: 0 4px 20px rgba(14, 165, 233, 0.25);
   --shadow-glow-lg: 0 8px 40px rgba(14, 165, 233, 0.35);
+  --spot-active-glow: 0 0 20px rgba(14, 165, 233, 0.6), 0 0 40px rgba(14, 165, 233, 0.3);
 
   /* ========================================
      Status Colors
      ======================================== */
   --status-success: #10b981;
   --status-error: #ef4444;
+  --text-on-dark: #fff;
+  --text-on-light: #000;
 
   /* ========================================
      Backdrop Blur
@@ -304,6 +307,7 @@ watch(
   --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.12);
   --shadow-glow: 0 4px 20px rgba(2, 132, 199, 0.15);
   --shadow-glow-lg: 0 8px 40px rgba(2, 132, 199, 0.2);
+  --spot-active-glow: 0 0 20px rgba(2, 132, 199, 0.5), 0 0 40px rgba(2, 132, 199, 0.25);
 }
 
 * {
@@ -330,6 +334,7 @@ body {
   direction: rtl;
   min-width: clamp(280px, 85vw, 100%);
   font-family: "Tajawal", "Inter", "Segoe UI", sans-serif;
+  font-weight: 400;
   background: var(--asphalt-dark);
   color: var(--road-white);
   -webkit-font-smoothing: antialiased;
@@ -337,6 +342,14 @@ body {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   overflow-x: hidden;
+}
+
+html[lang="en"] body {
+  font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+html[lang="ar"] body {
+  font-family: "Tajawal", "Segoe UI", sans-serif;
 }
 
 body::before {
@@ -422,6 +435,7 @@ a {
   max-width: 1400px;
   margin: 0 auto var(--space-lg);
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-lg);
@@ -482,7 +496,7 @@ a {
 .brand-text {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-2xs);
 }
 
 .brand-kicker {
@@ -490,7 +504,7 @@ a {
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--accent-primary);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .brand-block h1 {
@@ -498,7 +512,6 @@ a {
   font-size: clamp(1.2rem, 2vw, 1.6rem);
   font-weight: 700;
   color: var(--text-primary);
-  font-family: "Tajawal", sans-serif;
 }
 
 .nav-links {
@@ -514,7 +527,7 @@ a {
   gap: var(--space-xs);
   padding: var(--space-sm) var(--space-md);
   border-radius: var(--radius-md);
-  font-weight: 600;
+  font-weight: 500;
   font-size: var(--text-sm);
   color: var(--text-secondary);
   background: rgba(255, 255, 255, 0.03);
@@ -523,8 +536,8 @@ a {
 }
 
 .nav-links a svg {
-  width: 18px;
-  height: 18px;
+  width: var(--icon-xs);
+  height: var(--icon-xs);
   flex-shrink: 0;
 }
 
@@ -552,7 +565,7 @@ a {
 }
 
 :root.light .nav-links a.router-link-exact-active {
-  color: #fff;
+  color: var(--text-on-dark);
   background: linear-gradient(
     135deg,
     var(--accent-primary),
@@ -563,7 +576,7 @@ a {
 }
 
 .nav-links a.router-link-exact-active {
-  color: #fff;
+  color: var(--text-on-dark);
   background: linear-gradient(
     135deg,
     var(--accent-primary),
@@ -576,6 +589,26 @@ a {
 .page-content {
   max-width: 1400px;
   margin: 0 auto;
+}
+
+.firebase-banner {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-md);
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: var(--status-error);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.firebase-banner svg {
+  width: var(--icon-xs);
+  height: var(--icon-xs);
+  flex-shrink: 0;
 }
 
 @media (max-width: 768px) {

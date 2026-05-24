@@ -18,10 +18,10 @@ function toggleTheme() {
     class="theme-toggle"
     :aria-label="
       isSystem
-        ? 'الوضع التلقائي'
+        ? $t('theme.auto')
         : isDark
-          ? 'الوضع الداكن'
-          : 'الوضع الفاتح'
+          ? $t('theme.dark')
+          : $t('theme.light')
     "
     @click="toggleTheme"
   >

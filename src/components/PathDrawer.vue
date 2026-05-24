@@ -2,7 +2,7 @@
   <div
     class="path-drawer"
     role="img"
-    :aria-label="activePath ? 'Navigation path to parking spot' : ''"
+    :aria-label="activePath ? $t('floor.pathAria') : ''"
     aria-live="polite"
     :style="{
       '--path-color-start': pathGradStart,
@@ -262,12 +262,12 @@ onUnmounted(() => {
 }
 
 :root.light .start-node {
-  stroke: rgba(255, 255, 255, 0.9);
+  stroke: rgba(0, 0, 0, 0.4);
   filter: drop-shadow(0 0 12px var(--path-glow));
 }
 
 :root.light .end-node {
-  stroke: rgba(255, 255, 255, 0.9);
+  stroke: rgba(0, 0, 0, 0.4);
   filter: drop-shadow(0 0 10px var(--path-end-glow));
 }
 </style>

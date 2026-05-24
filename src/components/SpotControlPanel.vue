@@ -1,8 +1,11 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useStore } from "vuex";
-import { SPOT_STATUS, SPOT_LABELS, SPOT_CLASSES, getFloorFromSpotId } from "@/constants";
+import { useI18n } from "vue-i18n";
+import { SPOT_STATUS, SPOT_LABEL_KEYS, SPOT_CLASSES, getFloorFromSpotId } from "@/constants";
 import { useToast } from "@/composables/useToast";
+
+const { t } = useI18n();
 
 const SEC = 1000;
 const MIN = 60 * SEC;
@@ -11,13 +14,13 @@ const DAY = 24 * HOUR;
 
 function formatDuration(ms) {
   if (ms == null || ms < 0) return "";
-  if (ms < MIN) return "<1m";
+  if (ms < MIN) return "<1" + t("spotControl.durationMin");
   const days = Math.floor(ms / DAY);
   const hours = Math.floor((ms % DAY) / HOUR);
   const minutes = Math.floor((ms % HOUR) / MIN);
-  if (days > 0) return days >= 2 ? `${days}d` : hours > 0 ? `${days}d ${hours}h` : `${days}d`;
-  if (hours > 0) return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
-  return `${minutes}m`;
+  if (days > 0) return days >= 2 ? `${days}${t("spotControl.durationDay")}` : hours > 0 ? `${days}${t("spotControl.durationDay")} ${hours}${t("spotControl.durationHour")}` : `${days}${t("spotControl.durationDay")}`;
+  if (hours > 0) return minutes > 0 ? `${hours}${t("spotControl.durationHour")} ${minutes}${t("spotControl.durationMin")}` : `${hours}${t("spotControl.durationHour")}`;
+  return `${minutes}${t("spotControl.durationMin")}`;
 }
 
 function formatDurationPrecise(ms) {
@@ -27,10 +30,10 @@ function formatDurationPrecise(ms) {
   const minutes = Math.floor((ms % HOUR) / MIN);
   const seconds = Math.floor((ms % MIN) / SEC);
   const parts = [];
-  if (days > 0) parts.push(`${days}d`);
-  if (hours > 0) parts.push(`${hours}h`);
-  if (minutes > 0) parts.push(`${minutes}m`);
-  if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`);
+  if (days > 0) parts.push(`${days}${t("spotControl.durationDay")}`);
+  if (hours > 0) parts.push(`${hours}${t("spotControl.durationHour")}`);
+  if (minutes > 0) parts.push(`${minutes}${t("spotControl.durationMin")}`);
+  if (seconds > 0 || parts.length === 0) parts.push(`${seconds}${t("spotControl.durationSec")}`);
   return parts.join(" ");
 }
 
@@ -43,16 +46,16 @@ const SECTIONS = {
   C: { label: "C", spots: ["C1", "C2", "C3", "C4", "C5"] }
 };
 
-const FLOORS = [
+const FLOORS = computed(() => [
   {
-    label: "الدور 1",
+    label: t("floor.floor1Title"),
     sections: ["A", "B"]
   },
   {
-    label: "الدور 2",
+    label: t("floor.floor2Title"),
     sections: ["C"]
   }
-];
+]);
 
 const floor1Spots = computed(() => store.getters.getFloor1Spots);
 const floor2Spots = computed(() => store.getters.getFloor2Spots);
@@ -62,7 +65,7 @@ const spotMeta = computed(() => store.getters.getSpotMeta);
 const statusOptions = computed(() =>
   [SPOT_STATUS.FREE, SPOT_STATUS.OCCUPIED, SPOT_STATUS.RESERVED, SPOT_STATUS.MAINTENANCE].map(value => ({
     value,
-    label: SPOT_LABELS[value],
+    label: t(SPOT_LABEL_KEYS[value]),
     cls: SPOT_CLASSES[value]
   }))
 );
@@ -143,10 +146,10 @@ async function changeStatus(status) {
       spotId,
       status
     });
-    toast.success(`تم تغيير حالة ${spotId} إلى ${SPOT_LABELS[status]}`);
+    toast.success(t("spotControl.toastSuccess", { id: spotId, status: t(SPOT_LABEL_KEYS[status]) }));
     closePopover();
   } catch (err) {
-    toast.error("فشل تحديث الحالة. حاول مرة أخرى");
+    toast.error(t("spotControl.toastError"));
   }
 }
 
@@ -211,8 +214,8 @@ onUnmounted(() => {
         <circle cx="17" cy="16" r="0.5" fill="currentColor" />
       </svg>
       <div>
-        <h3>التحكم اليدوي في المواقف</h3>
-        <p>تغيير حالة المواقف مباشرة</p>
+        <h3>{{ $t('spotControl.heading') }}</h3>
+        <p>{{ $t('spotControl.description') }}</p>
       </div>
     </div>
 
@@ -235,8 +238,8 @@ onUnmounted(() => {
               ]"
               role="button"
               tabindex="0"
-              :aria-label="`موقف ${spotId} - ${SPOT_LABELS[getStatus(spotId)]}${getStatus(spotId) === SPOT_STATUS.OCCUPIED && getDuration(spotId) != null ? ' - مشغولة لمدة ' + formatDurationPrecise(getDuration(spotId)) : ''}`"
-              :title="getStatus(spotId) === SPOT_STATUS.OCCUPIED && getDuration(spotId) != null ? 'مشغولة لمدة ' + formatDurationPrecise(getDuration(spotId)) : ''"
+              :aria-label="getStatus(spotId) === SPOT_STATUS.OCCUPIED && getDuration(spotId) != null ? $t('spotControl.cardAriaDuration', { id: spotId, status: $t(SPOT_LABEL_KEYS[getStatus(spotId)]), duration: formatDurationPrecise(getDuration(spotId)) }) : $t('spotControl.cardAria', { id: spotId, status: $t(SPOT_LABEL_KEYS[getStatus(spotId)]) })"
+              :title="getStatus(spotId) === SPOT_STATUS.OCCUPIED && getDuration(spotId) != null ? $t('spotControl.cardTitleDuration', { duration: formatDurationPrecise(getDuration(spotId)) }) : ''"
               @click="openPopover(spotId)"
               @keydown.enter="openPopover(spotId)"
               @keydown.space.prevent="openPopover(spotId)"
@@ -257,12 +260,12 @@ onUnmounted(() => {
           class="spot-control__popover"
           :style="{ top: popover.top + 'px', left: popover.left + 'px' }"
           role="dialog"
-          aria-label="تغيير حالة الموقف"
+          :aria-label="$t('spotControl.popoverAria')"
         >
           <div class="spot-control__popover-header">
             <span class="spot-control__popover-spot">{{ popover.spotId }}</span>
             <span class="spot-control__popover-current">
-              الحالية: {{ SPOT_LABELS[popover.currentStatus] }}
+              {{ $t('spotControl.currentStatus', { status: $t(SPOT_LABEL_KEYS[popover.currentStatus]) }) }}
             </span>
           </div>
           <div class="spot-control__popover-grid">
@@ -333,7 +336,7 @@ onUnmounted(() => {
 
 .spot-control__floor-label {
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-secondary);
   margin-bottom: var(--space-md);
   padding-bottom: var(--space-xs);
@@ -434,14 +437,14 @@ onUnmounted(() => {
 
 .spot-control__duration-badge {
   position: absolute;
-  bottom: 2px;
-  right: 4px;
+  inset-block-end: var(--space-2xs);
+  inset-inline-end: var(--space-xs);
   font-size: clamp(0.5rem, 1.2vw, 0.6rem);
   font-weight: 700;
   color: rgba(255, 255, 255, 0.9);
   background: rgba(0, 0, 0, 0.35);
-  padding: 0 4px;
-  border-radius: 3px;
+  padding: 0 var(--space-2xs);
+  border-radius: var(--radius-sm);
   line-height: 1.4;
   letter-spacing: 0.02em;
 }
@@ -531,7 +534,7 @@ onUnmounted(() => {
   border: 2px solid transparent;
   border-radius: var(--radius-sm);
   font-size: var(--text-2xs);
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   color: #fff;
   transition:

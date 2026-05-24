@@ -9,18 +9,18 @@
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="ابحث عن مستخدم..."
+          :placeholder="$t('userGrid.searchPlaceholder')"
         />
       </div>
       <div class="user-count">
-        {{ filteredUsers.length }} مستخدم
+        {{ $t('userGrid.userCount', { count: filteredUsers.length }) }}
       </div>
     </div>
 
     <div class="datagrid-container">
       <div v-if="isLoading" class="loading-state">
         <div class="spinner"></div>
-        <p>جاري تحميل البيانات...</p>
+        <p>{{ $t('userGrid.loading') }}</p>
       </div>
 
       <div v-else-if="error" class="error-state">
@@ -29,8 +29,8 @@
           <line x1="15" y1="9" x2="9" y2="15" />
           <line x1="9" y1="9" x2="15" y2="15" />
         </svg>
-        <p>{{ error }}</p>
-        <button @click="fetchUsers" class="retry-btn">إعادة المحاولة</button>
+        <p>{{ $t(error) }}</p>
+        <button @click="fetchUsers" class="retry-btn">{{ $t('userGrid.retry') }}</button>
       </div>
 
       <div v-else-if="filteredUsers.length === 0" class="empty-state">
@@ -40,16 +40,16 @@
           <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
           <path d="M16 3.13a4 4 0 0 1 0 7.75" />
         </svg>
-        <p v-if="searchQuery">لا توجد نتائج للبحث</p>
-        <p v-else>لا يوجد مستخدمين مسجلين</p>
+        <p v-if="searchQuery">{{ $t('userGrid.emptySearch') }}</p>
+        <p v-else>{{ $t('userGrid.emptyUsers') }}</p>
       </div>
 
       <table v-else class="users-table">
         <thead>
           <tr>
-            <th>الاسم</th>
-            <th>البريد الإلكتروني</th>
-            <th>مدير</th>
+            <th>{{ $t('userGrid.headerName') }}</th>
+            <th>{{ $t('userGrid.headerEmail') }}</th>
+            <th>{{ $t('userGrid.headerAdmin') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -77,9 +77,11 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useStore } from "vuex";
+import { useI18n } from "vue-i18n";
 import { useToast } from "@/composables/useToast";
 
 const store = useStore();
+const { t } = useI18n();
 const toast = useToast();
 
 const searchQuery = ref("");
@@ -103,9 +105,9 @@ const filteredUsers = computed(() => {
 async function fetchUsers() {
   try {
     await store.dispatch("auth/fetchUsers");
-    toast.success("تم تحميل المستخدمين");
+    toast.success(t("userGrid.toastLoaded"));
   } catch {
-    toast.error("حدث خطأ أثناء تحميل البيانات");
+    toast.error(t("userGrid.toastError"));
   }
 }
 
@@ -114,10 +116,10 @@ async function toggleAdmin(user, event) {
 
   try {
     await store.dispatch("auth/toggleAdmin", { user, isAdmin: newIsAdmin });
-    toast.success("تم تحديث صلاحيات المستخدم");
+    toast.success(t("userGrid.toastPermissionUpdated"));
   } catch {
     event.target.checked = !newIsAdmin;
-    toast.error("فشل تحديث الصلاحيات");
+    toast.error(t("userGrid.toastPermissionFailed"));
   }
 }
 
@@ -149,7 +151,7 @@ onMounted(() => {
 
 .search-box svg {
   position: absolute;
-  left: var(--space-md);
+  inset-inline-start: var(--space-md);
   top: 50%;
   transform: translateY(-50%);
   width: 20px;
@@ -160,7 +162,7 @@ onMounted(() => {
 .search-box input {
   width: 100%;
   padding: var(--space-md);
-  padding-left: 44px;
+  padding-inline-start: 44px;
   border-radius: var(--radius-md);
   border: 1px solid var(--glass-border);
   background: var(--asphalt-base);
@@ -175,8 +177,12 @@ onMounted(() => {
 }
 
 .search-box input:focus {
-  outline: none;
   border-color: var(--accent-primary);
+}
+
+.search-box input:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
 }
 
 .user-count {
@@ -269,7 +275,7 @@ onMounted(() => {
   padding: var(--space-md);
   text-align: right;
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-secondary);
   background: var(--asphalt-dark);
   border-bottom: 1px solid var(--glass-border);
@@ -291,7 +297,7 @@ onMounted(() => {
 }
 
 .user-name {
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .user-email {
@@ -328,13 +334,18 @@ onMounted(() => {
 .checkbox-wrapper input:checked + .checkbox-custom::after {
   content: "";
   position: absolute;
-  left: 7px;
-  top: 3px;
+  inset-inline-start: 7px;
+  inset-block-start: 3px;
   width: 6px;
   height: 10px;
   border: solid var(--asphalt-base);
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
+}
+
+.checkbox-wrapper input:focus-visible + .checkbox-custom {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
 }
 
 .checkbox-wrapper input:disabled + .checkbox-custom {

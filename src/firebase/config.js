@@ -10,9 +10,37 @@ const firebaseConfig = {
   projectId: process.env.VUE_APP_FIREBASE_PROJECT_ID
 };
 
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
-const auth = getAuth(app);
-const firestore = getFirestore(app);
+let database = null;
+let auth = null;
+let firestore = null;
 
-export { database, ref, onValue, set, serverTimestamp, auth, firestore };
+try {
+  const app = initializeApp(firebaseConfig);
+  database = getDatabase(app);
+  auth = getAuth(app);
+  firestore = getFirestore(app);
+} catch (e) {
+  console.error("Firebase init failed:", e);
+}
+
+function checkConnection() {
+  return new Promise((resolve) => {
+    if (!database) {
+      resolve(false);
+      return;
+    }
+    const connectedRef = ref(database, ".info/connected");
+    const timer = setTimeout(() => resolve(false), 5000);
+    const unsub = onValue(connectedRef, (snap) => {
+      clearTimeout(timer);
+      unsub();
+      resolve(snap.val());
+    }, () => {
+      clearTimeout(timer);
+      unsub();
+      resolve(false);
+    });
+  });
+}
+
+export { database, ref, onValue, set, serverTimestamp, auth, firestore, checkConnection };

@@ -7,37 +7,37 @@
         <path d="M12 7v5l3 3" />
       </svg>
       <div>
-        <h3>إحصائيات عامة</h3>
-        <p>نظرة عامة على المواقف</p>
+        <h3>{{ $t('stats.heading') }}</h3>
+        <p>{{ $t('stats.description') }}</p>
       </div>
     </div>
 
     <div class="dashboard-stats__grid">
       <div class="dashboard-stats__card">
-        <div class="dashboard-stats__label">نسبة الإشغال</div>
+        <div class="dashboard-stats__label">{{ $t('stats.occupancy') }}</div>
         <div class="dashboard-stats__value" :class="occupancyClass">{{ occupancyPercent }}%</div>
         <div class="dashboard-stats__bar">
           <div class="dashboard-stats__bar-fill" :style="{ width: occupancyPercent + '%' }"></div>
         </div>
-        <div class="dashboard-stats__sub">{{ occupiedCount }} / {{ totalCount }} مشغولة</div>
+        <div class="dashboard-stats__sub">{{ $t('stats.occupiedSubtext', { occupied: occupiedCount, total: totalCount }) }}</div>
       </div>
 
       <div class="dashboard-stats__card">
-        <div class="dashboard-stats__label">آخر تحديث</div>
+        <div class="dashboard-stats__label">{{ $t('stats.lastUpdated') }}</div>
         <div class="dashboard-stats__value">{{ timeAgo || '—' }}</div>
         <div class="dashboard-stats__sub">{{ formattedTimestamp }}</div>
       </div>
 
       <div class="dashboard-stats__card">
-        <div class="dashboard-stats__label">البوابات</div>
+        <div class="dashboard-stats__label">{{ $t('stats.gates') }}</div>
         <div class="dashboard-stats__gates">
           <div class="dashboard-stats__gate" :class="{ 'is-open': gateState.entry }">
             <span class="dashboard-stats__gate-dot"></span>
-            <span>المدخل</span>
+            <span>{{ $t('stats.gateEntry') }}</span>
           </div>
           <div class="dashboard-stats__gate" :class="{ 'is-open': gateState.exit }">
             <span class="dashboard-stats__gate-dot"></span>
-            <span>المخرج</span>
+            <span>{{ $t('stats.gateExit') }}</span>
           </div>
         </div>
       </div>
@@ -81,10 +81,13 @@ const occupancyClass = computed(() => {
 
 const { timeAgo } = useTimeAgo(lastUpdated);
 
+const locale = computed(() => store.getters.currentLocale);
+
 const formattedTimestamp = computed(() => {
   if (!lastUpdated.value) return "";
   const d = new Date(lastUpdated.value);
-  return d.toLocaleString("ar-SA");
+  const loc = locale.value === "ar" ? "ar-SA" : "en-US";
+  return d.toLocaleString(loc);
 });
 
 
@@ -146,7 +149,7 @@ const formattedTimestamp = computed(() => {
 
 .dashboard-stats__label {
   font-size: var(--text-2xs);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;

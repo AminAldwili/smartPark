@@ -35,16 +35,16 @@ onUnmounted(() => {
 <style>
 /* Global scope - not scoped, since teleported to body */
 .global-tooltip {
-  padding: 6px 12px;
-  border-radius: 6px;
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-sm);
   background: var(--asphalt-dark);
   color: var(--road-white);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--text-xs);
+  font-weight: 500;
   white-space: nowrap;
   z-index: 9999;
   pointer-events: none;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-md);
   will-change: transform;
 }
 

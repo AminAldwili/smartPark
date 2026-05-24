@@ -12,7 +12,7 @@
       role="button"
       tabindex="0"
       :aria-pressed="status === 'occupied'"
-      :aria-label="`موقف ${spotId} - ${statusLabel}`"
+      :aria-label="$t('spot.ariaLabel', { id: spotId, status: statusLabel })"
       @click="onClick"
       @touchstart.passive="onTouchStart"
       @touchend="isTapped = false"
@@ -33,12 +33,15 @@
 
 <script setup>
 import { ref, computed, onUnmounted } from "vue";
+import { useI18n } from "vue-i18n";
 import {
   SPOT_STATUS,
-  SPOT_LABELS,
+  SPOT_LABEL_KEYS,
   SPOT_CLASSES
 } from "@/constants";
 import { useTooltip } from "@/composables/useTooltip";
+
+const { t } = useI18n();
 
 const props = defineProps({
   /**
@@ -112,7 +115,7 @@ const statusClass = computed(() => {
  * @type {import('vue').ComputedRef<string>}
  */
 const statusLabel = computed(() => {
-  return SPOT_LABELS[props.status] || SPOT_LABELS[SPOT_STATUS.FREE];
+  return t(SPOT_LABEL_KEYS[props.status]) || t(SPOT_LABEL_KEYS[SPOT_STATUS.FREE]);
 });
 
 function handleMouseEnter() {
@@ -172,7 +175,7 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: var(--space-xs);
   border-radius: var(--radius-md);
   cursor: pointer;
   user-select: none;
@@ -192,7 +195,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: var(--space-2xs);
 }
 
 .spot-id {
@@ -204,7 +207,7 @@ onUnmounted(() => {
 
 .spot-state {
   font-size: clamp(0.65rem, 1.8vw, 0.75rem);
-  font-weight: 600;
+  font-weight: 700;
   opacity: 0.85;
   transition: opacity var(--duration-normal) var(--ease-out);
 }
@@ -309,7 +312,7 @@ onUnmounted(() => {
 .is-occupied,
 .is-reserved,
 .is-maintenance {
-  color: #fff;
+  color: var(--text-on-dark);
   background: linear-gradient(145deg, var(--status-color), var(--status-bg-dark));
   box-shadow:
     var(--shadow-sm),
@@ -410,9 +413,7 @@ onUnmounted(() => {
 
 .spot-card.is-active {
   animation: spot-active-pulse 1.5s ease-in-out infinite;
-  box-shadow:
-    0 0 20px rgba(14, 165, 233, 0.6),
-    0 0 40px rgba(14, 165, 233, 0.3);
+  box-shadow: var(--spot-active-glow);
 }
 
 .spot-card.is-active::after {

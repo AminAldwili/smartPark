@@ -10,8 +10,8 @@
         <path d="M7 18h10" />
       </svg>
       <div>
-        <h3>التحكم في البوابات</h3>
-        <p>فتح وإغلاق بوابات الدخول والخروج</p>
+        <h3>{{ $t('gate.heading') }}</h3>
+        <p>{{ $t('gate.description') }}</p>
       </div>
     </div>
 
@@ -25,16 +25,16 @@
               <line x1="12" y1="9" x2="12" y2="13" />
               <line x1="12" y1="17" x2="12.01" y2="17" />
             </svg>
-            وضع الطوارئ
+            {{ $t('gate.emergencyLabel') }}
           </span>
-          <span class="gate-controls__desc">فتح جميع البوابات في حالات الطوارئ</span>
+          <span class="gate-controls__desc">{{ $t('gate.emergencyDesc') }}</span>
         </div>
         <button
           class="gate-controls__switch"
           :class="{ 'is-active': gateState.emergency }"
           role="switch"
           :aria-checked="!!gateState.emergency"
-          :aria-label="'وضع الطوارئ'"
+          :aria-label="$t('gate.emergencyAria')"
           @click="handleEmergencyToggle"
         >
           <span class="gate-controls__knob"></span>
@@ -50,16 +50,16 @@
               <polyline points="10 17 15 12 10 7" />
               <line x1="15" y1="12" x2="3" y2="12" />
             </svg>
-            بوابة الدخول
+            {{ $t('gate.entryLabel') }}
           </span>
-          <span class="gate-controls__desc">التحكم في بوابة دخول المركبات</span>
+          <span class="gate-controls__desc">{{ $t('gate.entryDesc') }}</span>
         </div>
         <button
           class="gate-controls__switch"
           :class="{ 'is-active': gateState.entry }"
           role="switch"
           :aria-checked="!!gateState.entry"
-          :aria-label="'بوابة الدخول'"
+          :aria-label="$t('gate.entryAria')"
           :disabled="!!gateState.emergency"
           @click="handleToggle('entry_open', gateState.entry ? 0 : 1)"
         >
@@ -76,16 +76,16 @@
               <polyline points="16 17 21 12 16 7" />
               <line x1="21" y1="12" x2="9" y2="12" />
             </svg>
-            بوابة الخروج
+            {{ $t('gate.exitLabel') }}
           </span>
-          <span class="gate-controls__desc">التحكم في بوابة خروج المركبات</span>
+          <span class="gate-controls__desc">{{ $t('gate.exitDesc') }}</span>
         </div>
         <button
           class="gate-controls__switch"
           :class="{ 'is-active': gateState.exit }"
           role="switch"
           :aria-checked="!!gateState.exit"
-          :aria-label="'بوابة الخروج'"
+          :aria-label="$t('gate.exitAria')"
           :disabled="!!gateState.emergency"
           @click="handleToggle('exit_open', gateState.exit ? 0 : 1)"
         >
@@ -112,24 +112,24 @@
               </svg>
             </div>
             <h4 id="confirm-title">
-              {{ confirmAction === 'activate' ? 'تفعيل وضع الطوارئ' : 'إلغاء وضع الطوارئ' }}
+              {{ confirmAction === 'activate' ? $t('gate.modalTitle') : $t('gate.modalTitleDeactivate') }}
             </h4>
             <p>
               {{ confirmAction === 'activate'
-                ? 'سيتم تفعيل وضع الطوارئ. هل أنت متأكد؟'
-                : 'سيتم إلغاء وضع الطوارئ. هل أنت متأكد؟'
+                ? $t('gate.modalDesc')
+                : $t('gate.modalDescDeactivate')
               }}
             </p>
             <div class="gate-controls__modal-actions">
               <button class="gate-controls__btn gate-controls__btn--cancel" @click="cancelConfirm">
-                إلغاء
+                {{ $t('gate.modalCancel') }}
               </button>
               <button
                 class="gate-controls__btn"
                 :class="confirmAction === 'activate' ? 'gate-controls__btn--danger' : 'gate-controls__btn--confirm'"
                 @click="confirmEmergency"
               >
-                {{ confirmAction === 'activate' ? 'تفعيل' : 'إلغاء الوضع' }}
+                {{ confirmAction === 'activate' ? $t('gate.modalConfirm') : $t('gate.modalConfirmDeactivate') }}
               </button>
             </div>
           </div>
@@ -142,11 +142,14 @@
 <script setup>
 import { ref, computed } from "vue";
 import { useStore } from "vuex";
+import { useI18n } from "vue-i18n";
 import { useToast } from "@/composables/useToast";
 
+const { t } = useI18n();
+
 const GATE_LABELS = {
-  entry_open: { on: "تم فتح بوابة الدخول", off: "تم إغلاق بوابة الدخول" },
-  exit_open: { on: "تم فتح بوابة الخروج", off: "تم إغلاق بوابة الخروج" }
+  entry_open: { on: t("gate.toastEntryOpened"), off: t("gate.toastEntryClosed") },
+  exit_open: { on: t("gate.toastExitOpened"), off: t("gate.toastExitClosed") }
 };
 
 const store = useStore();
@@ -165,7 +168,7 @@ async function handleToggle(field, value) {
     }
   } catch (err) {
     console.error("Gate toggle error:", err);
-    toast.error("فشل في تنفيذ العملية. الرجاء المحاولة مرة أخرى");
+    toast.error(t("gate.toastError"));
   }
 }
 
@@ -181,14 +184,14 @@ async function confirmEmergency() {
     await store.dispatch("toggleEmergency", value);
     toast.success(
       value
-        ? "تم تفعيل وضع الطوارئ"
-        : "تم إلغاء وضع الطوارئ"
+        ? t("gate.toastEmergencyActivated")
+        : t("gate.toastEmergencyDeactivated")
     );
     showConfirm.value = false;
     confirmAction.value = "";
   } catch (err) {
     console.error("Emergency toggle error:", err);
-    toast.error("فشل في تنفيذ العملية. الرجاء المحاولة مرة أخرى");
+    toast.error(t("gate.toastError"));
   }
 }
 
@@ -283,7 +286,7 @@ function cancelConfirm() {
   align-items: center;
   gap: var(--space-sm);
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-primary);
 }
 
@@ -341,18 +344,18 @@ function cancelConfirm() {
 .gate-controls__knob {
   position: absolute;
   top: 3px;
-  left: 3px;
+  inset-inline-start: 3px;
   height: calc(100% - 6px);
   aspect-ratio: 1;
   border-radius: 50%;
   background: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  transition: left var(--duration-normal) var(--ease-spring);
+  transition: inset-inline-start var(--duration-normal) var(--ease-spring);
 }
 
 .gate-controls__switch.is-active .gate-controls__knob {
-  left: auto;
-  right: 3px;
+  inset-inline-start: calc(100% - 3px);
+  transform: translateX(-100%);
 }
 
 /* ---- Confirmation Modal ---- */
@@ -430,7 +433,7 @@ function cancelConfirm() {
   border-radius: var(--radius-md);
   border: 1px solid var(--glass-border);
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease-out);
 }
@@ -452,12 +455,13 @@ function cancelConfirm() {
 
 .gate-controls__btn--danger {
   background: var(--status-error);
-  color: white;
+  color: var(--text-on-dark);
   border-color: var(--status-error);
 }
 
 .gate-controls__btn--danger:hover {
-  background: #dc2626;
+  background: var(--status-error);
+  filter: brightness(1.1);
 }
 
 .gate-controls__btn--confirm {

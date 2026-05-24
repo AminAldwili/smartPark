@@ -7,8 +7,8 @@
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
           <circle cx="12" cy="7" r="4" />
         </svg>
-        <h2>{{ isLogin ? "تسجيل الدخول" : "إنشاء حساب" }}</h2>
-        <p>{{ isLogin ? "مرحباً بعودتك" : "انضم إلينا اليوم" }}</p>
+        <h2>{{ isLogin ? $t('auth.loginTitle') : $t('auth.signupTitle') }}</h2>
+        <p>{{ isLogin ? $t('auth.loginSubtitle') : $t('auth.signupSubtitle') }}</p>
       </div>
 
       <form @submit.prevent="handleSubmit" class="auth-form">
@@ -17,39 +17,39 @@
         </div>
 
         <div v-if="!isLogin" class="form-group">
-          <label for="name">الاسم</label>
+          <label for="name">{{ $t('auth.nameLabel') }}</label>
           <input
             id="name"
             v-model="form.name"
             type="text"
             :class="{ 'has-error': errors.name }"
-            placeholder="أدخل اسمك"
+            :placeholder="$t('auth.namePlaceholder')"
             autocomplete="name"
           />
           <span v-if="errors.name" class="field-error">{{ errors.name }}</span>
         </div>
 
         <div class="form-group">
-          <label for="email">البريد الإلكتروني</label>
+          <label for="email">{{ $t('auth.emailLabel') }}</label>
           <input
             id="email"
             v-model="form.email"
             type="email"
             :class="{ 'has-error': errors.email }"
-            placeholder="example@email.com"
+            :placeholder="$t('auth.emailPlaceholder')"
             autocomplete="email"
           />
           <span v-if="errors.email" class="field-error">{{ errors.email }}</span>
         </div>
 
         <div class="form-group">
-          <label for="password">كلمة المرور</label>
+          <label for="password">{{ $t('auth.passwordLabel') }}</label>
           <input
             id="password"
             v-model="form.password"
             type="password"
             :class="{ 'has-error': errors.password }"
-            placeholder="••••••••"
+            :placeholder="$t('auth.passwordPlaceholder')"
             autocomplete="current-password"
           />
           <span v-if="errors.password" class="field-error">{{ errors.password }}</span>
@@ -57,13 +57,13 @@
 
         <button type="submit" class="submit-btn" :disabled="isLoading">
           <span v-if="isLoading" class="spinner"></span>
-          <span v-else>{{ isLogin ? "دخول" : "إنشاء حساب" }}</span>
+          <span v-else>{{ isLogin ? $t('auth.loginBtn') : $t('auth.signupBtn') }}</span>
         </button>
       </form>
 
       <div class="auth-footer">
         <button @click="toggleMode" class="toggle-btn">
-          {{ isLogin ? "ليس لديك حساب؟ إنشاء جديد" : "لديك حساب؟ تسجيل الدخول" }}
+          {{ isLogin ? $t('auth.toggleLogin') : $t('auth.toggleSignup') }}
         </button>
       </div>
     </div>
@@ -76,13 +76,13 @@
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
           <polyline points="9,12 11,14 15,10" />
         </svg>
-        <span>لم يتم تأكيد بريدك الإلكتروني بعد</span>
+        <span>{{ $t('auth.verifyBanner') }}</span>
         <button
           :disabled="isSendingVerification"
           class="resend-btn"
           @click="resendVerification"
         >
-          {{ isSendingVerification ? "جاري الإرسال..." : "إعادة إرسال التأكيد" }}
+          {{ isSendingVerification ? $t('auth.verifySending') : $t('auth.verifyResend') }}
         </button>
       </div>
 
@@ -95,10 +95,10 @@
           </svg>
         </div>
         <div class="profile-info">
-          <h2>{{ displayName || "مستخدم" }}</h2>
+          <h2>{{ displayName || $t('auth.profileName', { name: '' }).trim() || $t('auth.profileName', { name: '' }) }}</h2>
           <p>{{ userEmail }}</p>
-          <span v-if="isAdmin" class="admin-badge">مدير</span>
-          <span v-if="!isEmailVerified" class="unverified-badge">غير مؤكد</span>
+          <span v-if="isAdmin" class="admin-badge">{{ $t('auth.badgeAdmin') }}</span>
+          <span v-if="!isEmailVerified" class="unverified-badge">{{ $t('auth.badgeUnverified') }}</span>
         </div>
       </div>
 
@@ -109,13 +109,13 @@
 
       <!-- Edit name -->
       <div class="profile-section">
-        <h3 class="section-title">الاسم</h3>
+        <h3 class="section-title">{{ $t('auth.editName') }}</h3>
         <div class="input-row">
           <input
             v-model="nameInput"
             type="text"
             class="profile-input"
-            placeholder="أدخل اسمك"
+            :placeholder="$t('auth.editNamePlaceholder')"
             :disabled="isUpdatingProfile"
           />
           <button
@@ -124,20 +124,20 @@
             @click="saveName"
           >
             <span v-if="isUpdatingProfile" class="spinner-sm"></span>
-            <span v-else>حفظ</span>
+            <span v-else>{{ $t('auth.save') }}</span>
           </button>
         </div>
       </div>
 
       <!-- Edit email -->
       <div class="profile-section">
-        <h3 class="section-title">البريد الإلكتروني</h3>
+        <h3 class="section-title">{{ $t('auth.editEmail') }}</h3>
         <div class="input-row">
           <input
             v-model="emailInput"
             type="email"
             class="profile-input"
-            placeholder="example@email.com"
+            :placeholder="$t('auth.editEmailPlaceholder')"
             :disabled="isUpdatingProfile"
           />
         </div>
@@ -146,7 +146,7 @@
             v-model="emailPassword"
             type="password"
             class="profile-input"
-            placeholder="كلمة المرور الحالية (للتأكيد)"
+            :placeholder="$t('auth.confirmPassword')"
             :disabled="isUpdatingProfile"
           />
           <button
@@ -155,7 +155,7 @@
             @click="saveEmail"
           >
             <span v-if="isUpdatingProfile" class="spinner-sm"></span>
-            <span v-else>حفظ</span>
+            <span v-else>{{ $t('auth.save') }}</span>
           </button>
         </div>
         <p class="section-hint">
@@ -164,26 +164,26 @@
             <line x1="12" y1="16" x2="12" y2="12" />
             <line x1="12" y1="8" x2="12.01" y2="8" />
           </svg>
-          سيتم إرسال رابط تأكيد إلى البريد الجديد
+          {{ $t('auth.emailHint') }}
         </p>
       </div>
 
       <!-- Change password -->
       <div class="profile-section">
-        <h3 class="section-title">تغيير كلمة المرور</h3>
+        <h3 class="section-title">{{ $t('auth.changePassword') }}</h3>
         <div class="input-group">
           <input
             v-model="passwordCurrent"
             type="password"
             class="profile-input"
-            placeholder="كلمة المرور الحالية"
+            :placeholder="$t('auth.currentPassword')"
             :disabled="isUpdatingProfile"
           />
           <input
             v-model="passwordNew"
             type="password"
             class="profile-input"
-            placeholder="كلمة المرور الجديدة"
+            :placeholder="$t('auth.newPassword')"
             :disabled="isUpdatingProfile"
           />
           <input
@@ -191,7 +191,7 @@
             type="password"
             class="profile-input"
             :class="{ 'has-error': passwordError }"
-            placeholder="تأكيد كلمة المرور الجديدة"
+            :placeholder="$t('auth.confirmNewPassword')"
             :disabled="isUpdatingProfile"
           />
           <span v-if="passwordError" class="field-error">{{ passwordError }}</span>
@@ -201,20 +201,20 @@
             @click="savePassword"
           >
             <span v-if="isUpdatingProfile" class="spinner-sm"></span>
-            <span v-else>تحديث كلمة المرور</span>
+            <span v-else>{{ $t('auth.updatePassword') }}</span>
           </button>
         </div>
       </div>
 
       <!-- Delete account -->
       <div class="profile-section is-danger">
-        <h3 class="section-title">حذف الحساب</h3>
-        <p class="section-desc">بعد الحذف لا يمكن استعادة بياناتك</p>
-        <button class="delete-btn" @click="openDeleteModal">حذف الحساب</button>
+        <h3 class="section-title">{{ $t('auth.deleteAccount') }}</h3>
+        <p class="section-desc">{{ $t('auth.deleteWarning') }}</p>
+        <button class="delete-btn" @click="openDeleteModal">{{ $t('auth.deleteBtn') }}</button>
       </div>
 
       <!-- Logout -->
-      <button class="logout-btn" @click="handleLogout">تسجيل الخروج</button>
+      <button class="logout-btn" @click="handleLogout">{{ $t('auth.logout') }}</button>
     </div>
 
     <!-- Delete confirmation modal -->
@@ -229,14 +229,14 @@
                 <line x1="12" y1="17" x2="12.01" y2="17" />
               </svg>
             </div>
-            <h4 id="delete-title">حذف الحساب</h4>
-            <p>سيتم حذف جميع بياناتك نهائياً. أدخل كلمة المرور للتأكيد.</p>
+            <h4 id="delete-title">{{ $t('auth.modalDeleteTitle') }}</h4>
+            <p>{{ $t('auth.modalDeleteDesc') }}</p>
             <div class="modal-input-row">
               <input
                 v-model="deletePassword"
                 type="password"
                 class="profile-input"
-                placeholder="كلمة المرور"
+                :placeholder="$t('auth.modalDeletePlaceholder')"
                 :disabled="isUpdatingProfile"
                 @keydown.enter="confirmDelete"
               />
@@ -245,14 +245,14 @@
               {{ deleteError }}
             </div>
             <div class="modal-actions">
-              <button class="modal-btn modal-btn--cancel" @click="cancelDelete">إلغاء</button>
+              <button class="modal-btn modal-btn--cancel" @click="cancelDelete">{{ $t('auth.modalCancel') }}</button>
               <button
                 class="modal-btn modal-btn--danger"
                 :disabled="isUpdatingProfile || !deletePassword"
                 @click="confirmDelete"
               >
                 <span v-if="isUpdatingProfile" class="spinner-sm"></span>
-                <span v-else>تأكيد الحذف</span>
+                <span v-else>{{ $t('auth.modalConfirmDelete') }}</span>
               </button>
             </div>
           </div>
@@ -266,11 +266,13 @@
 import { ref, computed, watch } from "vue";
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
-import { getAuthErrorMessage } from "@/constants/ERROR_MESSAGES";
+import { useI18n } from "vue-i18n";
+import { getAuthErrorMessageKey } from "@/constants/ERROR_MESSAGES";
 import { useToast } from "@/composables/useToast";
 
 const store = useStore();
 const router = useRouter();
+const { t } = useI18n();
 const toast = useToast();
 
 const isLogin = ref(true);
@@ -303,12 +305,12 @@ const showProfile = computed(() => isAuthenticated.value && !isLoading.value);
 
 const errorMessage = computed(() => {
   if (!error.value) return "";
-  return getAuthErrorMessage(error.value);
+  return t(getAuthErrorMessageKey(error.value));
 });
 
 const profileErrorMessage = computed(() => {
   if (!profileError.value) return "";
-  return getAuthErrorMessage(profileError.value);
+  return t(getAuthErrorMessageKey(profileError.value));
 });
 
 watch(showProfile, (val) => {
@@ -334,23 +336,23 @@ function validate() {
   errors.value = { name: "", email: "", password: "" };
 
   if (!isLogin.value && !form.value.name.trim()) {
-    errors.value.name = "الاسم مطلوب";
+    errors.value.name = t("auth.validatorNameRequired");
     isValid = false;
   }
 
   if (!form.value.email.trim()) {
-    errors.value.email = "البريد الإلكتروني مطلوب";
+    errors.value.email = t("auth.validatorEmailRequired");
     isValid = false;
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.email)) {
-    errors.value.email = "البريد الإلكتروني غير صالح";
+    errors.value.email = t("auth.validatorEmailInvalid");
     isValid = false;
   }
 
   if (!form.value.password) {
-    errors.value.password = "كلمة المرور مطلوبة";
+    errors.value.password = t("auth.validatorPasswordRequired");
     isValid = false;
   } else if (form.value.password.length < 6) {
-    errors.value.password = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
+    errors.value.password = t("auth.validatorPasswordMin");
     isValid = false;
   }
 
@@ -370,7 +372,7 @@ async function handleLogin() {
   });
   redirectIfAdmin();
   if (!store.getters["auth/isUserAdmin"]) {
-    toast.success("تم تسجيل الدخول بنجاح");
+    toast.success(t("auth.toastLoginSuccess"));
   }
 }
 
@@ -382,7 +384,7 @@ async function handleSignup() {
   });
   redirectIfAdmin();
   if (!store.getters["auth/isUserAdmin"]) {
-    toast.success("تم إنشاء الحساب بنجاح. تحقق من بريدك الإلكتروني للتأكيد.");
+    toast.success(t("auth.toastSignupSuccess"));
   }
 }
 
@@ -401,9 +403,9 @@ async function saveName() {
 
   try {
     await store.dispatch("auth/updateProfileName", { name });
-    toast.success("تم تحديث الاسم بنجاح");
+    toast.success(t("auth.toastNameUpdated"));
   } catch (err) {
-    toast.error("فشل تحديث الاسم");
+    toast.error(t("auth.toastNameFailed"));
   }
 }
 
@@ -412,7 +414,7 @@ async function saveEmail() {
   if (!newEmail || !emailPassword.value) return;
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
-    toast.error("البريد الإلكتروني غير صالح");
+    toast.error(t("auth.toastEmailInvalid"));
     return;
   }
 
@@ -422,9 +424,9 @@ async function saveEmail() {
       password: emailPassword.value
     });
     emailPassword.value = "";
-    toast.success("تم إرسال رابط التأكيد إلى البريد الجديد");
+    toast.success(t("auth.toastEmailUpdated"));
   } catch (err) {
-    toast.error("فشل تحديث البريد الإلكتروني");
+    toast.error(t("auth.toastEmailFailed"));
   }
 }
 
@@ -433,11 +435,11 @@ async function savePassword() {
 
   if (!passwordCurrent.value || !passwordNew.value || !passwordConfirm.value) return;
   if (passwordNew.value.length < 6) {
-    passwordError.value = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
+    passwordError.value = t("auth.validatorPasswordMin");
     return;
   }
   if (passwordNew.value !== passwordConfirm.value) {
-    passwordError.value = "كلمة المرور غير متطابقة";
+    passwordError.value = t("auth.validatorPasswordMatch");
     return;
   }
 
@@ -449,9 +451,9 @@ async function savePassword() {
     passwordCurrent.value = "";
     passwordNew.value = "";
     passwordConfirm.value = "";
-    toast.success("تم تحديث كلمة المرور بنجاح");
+    toast.success(t("auth.toastPasswordUpdated"));
   } catch (err) {
-    toast.error("فشل تحديث كلمة المرور");
+    toast.error(t("auth.toastPasswordFailed"));
   }
 }
 
@@ -459,9 +461,9 @@ async function resendVerification() {
   isSendingVerification.value = true;
   try {
     await store.dispatch("auth/sendVerificationEmail");
-    toast.success("تم إرسال رابط التأكيد");
+    toast.success(t("auth.toastVerificationSent"));
   } catch (err) {
-    toast.error("فشل إرسال رابط التأكيد");
+    toast.error(t("auth.toastVerificationFailed"));
   }
   isSendingVerification.value = false;
 }
@@ -484,11 +486,11 @@ async function confirmDelete() {
 
   try {
     await store.dispatch("auth/deleteAccount", { password: deletePassword.value });
-    toast.success("تم حذف الحساب");
+    toast.success(t("auth.toastAccountDeleted"));
     showDeleteModal.value = false;
     router.push("/");
   } catch (err) {
-    deleteError.value = getAuthErrorMessage(store.getters["auth/authError"]);
+    deleteError.value = t(getAuthErrorMessageKey(store.getters["auth/authError"]));
   }
 }
 
@@ -558,7 +560,7 @@ async function handleLogout() {
 
 .form-group label {
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-primary);
 }
 
@@ -617,7 +619,7 @@ async function handleLogout() {
   background: var(--accent-primary);
   color: var(--asphalt-base);
   font-size: var(--text-base);
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   transition: transform var(--duration-fast) var(--ease-out),
     box-shadow var(--duration-fast) var(--ease-out);
@@ -709,7 +711,7 @@ async function handleLogout() {
   border: none;
   color: var(--accent-gold-light);
   font-size: var(--text-xs);
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   text-decoration: underline;
   padding: 0;
@@ -775,7 +777,7 @@ async function handleLogout() {
   padding: 2px var(--space-sm);
   border-radius: 999px;
   font-size: var(--text-2xs);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .admin-badge {
@@ -832,7 +834,7 @@ async function handleLogout() {
   background: var(--accent-primary);
   color: var(--asphalt-base);
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
   transition: transform var(--duration-fast) var(--ease-out),
@@ -890,7 +892,7 @@ async function handleLogout() {
   background: transparent;
   color: var(--status-error);
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease-out);
 }
@@ -913,7 +915,7 @@ async function handleLogout() {
   background: transparent;
   color: var(--text-secondary);
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease-out);
 }
@@ -1001,7 +1003,7 @@ async function handleLogout() {
   border-radius: var(--radius-md);
   border: 1px solid var(--glass-border);
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease-out);
 }
@@ -1028,7 +1030,8 @@ async function handleLogout() {
 }
 
 .modal-btn--danger:hover:not(:disabled) {
-  background: #dc2626;
+  background: var(--status-error);
+  filter: brightness(1.1);
 }
 
 .modal-btn--danger:disabled {

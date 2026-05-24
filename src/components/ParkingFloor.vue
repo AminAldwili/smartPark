@@ -282,8 +282,7 @@ onMounted(() => {
     var(--aisle-dark),
     var(--asphalt-lighter)
   );
-  border-left: 1px solid var(--aisle-border);
-  border-right: 1px solid var(--aisle-border);
+  border-inline: 1px solid var(--aisle-border);
 }
 
 .aisle-center-line {

@@ -1,22 +1,24 @@
 import { ref, onUnmounted, watch } from "vue";
+import { useI18n } from "vue-i18n";
 
 const SEC = 1000;
 const MIN = 60 * SEC;
 const HOUR = 60 * MIN;
 const DAY = 24 * HOUR;
 
-function formatAgo(diff) {
-  if (diff < 5 * SEC) return "الآن";
-  if (diff < MIN) return `${Math.floor(diff / SEC)}ث`;
-  if (diff < HOUR) return `${Math.floor(diff / MIN)}د`;
-  if (diff < DAY) return `${Math.floor(diff / HOUR)}س`;
-  return `${Math.floor(diff / DAY)}ي`;
-}
-
 export function useTimeAgo(timestamp) {
+  const { t } = useI18n();
   const timeAgo = ref("");
 
   let timer = null;
+
+  function formatAgo(diff) {
+    if (diff < 5 * SEC) return t("timeAgo.justNow");
+    if (diff < MIN) return `${Math.floor(diff / SEC)}${t("timeAgo.seconds")}`;
+    if (diff < HOUR) return `${Math.floor(diff / MIN)}${t("timeAgo.minutes")}`;
+    if (diff < DAY) return `${Math.floor(diff / HOUR)}${t("timeAgo.hours")}`;
+    return `${Math.floor(diff / DAY)}${t("timeAgo.days")}`;
+  }
 
   function update() {
     if (timestamp.value == null) {
@@ -24,7 +26,7 @@ export function useTimeAgo(timestamp) {
       return;
     }
     const diff = Date.now() - timestamp.value;
-    timeAgo.value = diff >= 0 ? formatAgo(diff) : "just now";
+    timeAgo.value = diff >= 0 ? formatAgo(diff) : t("timeAgo.justNow");
   }
 
   function startTimer() {

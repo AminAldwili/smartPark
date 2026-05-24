@@ -2,6 +2,7 @@ import { createStore } from "vuex";
 import { database, ref, onValue, set, serverTimestamp } from "../firebase/config";
 import { SPOT_STATUS, FIREBASE_PATHS, GATE_STATE } from "../constants";
 import { getFirebasePathFromSpotId } from "../constants";
+import i18n from "../i18n";
 import auth from "./modules/auth";
 
 /**
@@ -159,10 +160,12 @@ export default createStore({
     gateState: { emergency: GATE_STATE.CLOSED, entry: GATE_STATE.CLOSED, exit: GATE_STATE.CLOSED },
     theme: getInitialTheme(),
     firebaseInitialized: false,
+    firebaseError: false,
     isUpdatingSpot: false,
     themeMode: "system",
     spotMeta: { floor1: {}, floor2: {}, floor3: {} },
-    lastUpdated: null
+    lastUpdated: null,
+    locale: typeof localStorage !== "undefined" ? (localStorage.getItem("locale") || "ar") : "ar"
   },
 
   /**
@@ -200,6 +203,9 @@ export default createStore({
     /** Whether Firebase is connected */
     isFirebaseInitialized: (state) => state.firebaseInitialized,
 
+    /** Whether Firebase initialization failed */
+    hasFirebaseError: (state) => state.firebaseError,
+
     /** Whether a spot status update is in progress */
     isUpdatingSpot: (state) => state.isUpdatingSpot,
 
@@ -211,6 +217,9 @@ export default createStore({
 
     /** Global last updated timestamp */
     getLastUpdated: (state) => state.lastUpdated,
+
+    /** Current locale */
+    currentLocale: (state) => state.locale,
 
     /**
      * Get elapsed duration for a spot in milliseconds.
@@ -260,6 +269,10 @@ export default createStore({
       state.firebaseInitialized = value;
     },
 
+    SET_FIREBASE_ERROR(state, value) {
+      state.firebaseError = value;
+    },
+
     /**
      * Updates gate state from Firebase Manual/ node
      * @param {Object} state - Store state
@@ -279,6 +292,10 @@ export default createStore({
 
     SET_LAST_UPDATED(state, timestamp) {
       state.lastUpdated = timestamp;
+    },
+
+    SET_LOCALE(state, locale) {
+      state.locale = locale;
     }
   },
 
@@ -292,6 +309,10 @@ export default createStore({
      * @param {Object} param - {commit} Vuex context
      */
     initSpots({ commit }) {
+      if (!database) {
+        return;
+      }
+
       const garageRef = ref(database, FIREBASE_PATHS.GARAGE_ROOT);
 
       onValue(garageRef, (snapshot) => {
@@ -416,6 +437,12 @@ export default createStore({
           console.error("updateSpotStatus error:", error);
           throw error;
         });
+    },
+
+    setLocale({ commit }, locale) {
+      commit("SET_LOCALE", locale);
+      localStorage.setItem("locale", locale);
+      i18n.global.locale.value = locale;
     }
   },
   modules: { auth }

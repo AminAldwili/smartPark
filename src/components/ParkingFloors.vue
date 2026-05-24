@@ -17,14 +17,11 @@
               <line x1="8" y1="2" x2="8" y2="18" />
               <line x1="16" y1="6" x2="16" y2="22" />
             </svg>
-            Interactive Layout
+            {{ $t('floor.interactiveLayout') }}
           </span>
-          <h3>خريطة المواقف</h3>
+          <h3>{{ $t('floor.mapTitle') }}</h3>
         </div>
-        <p>
-          اختر أي موقف لترى مسارًا مرئيًا يبدأ من مرجع الدور الأول في أسفل
-          المنتصف وينتهي عند الموقف المحدد.
-        </p>
+        <p>{{ $t('floor.mapDescription') }}</p>
       </div>
 
       <div class="floors-container">
@@ -34,10 +31,8 @@
               <span class="floor-level">2</span>
             </div>
             <div class="floor-info">
-              <h3 class="floor-title">الدور 2</h3>
-              <p class="floor-subtitle">
-                المسار يصل لأي موقف في هذا الدور أيضًا
-              </p>
+              <h3 class="floor-title">{{ $t('floor.floor2Title') }}</h3>
+              <p class="floor-subtitle">{{ $t('floor.floor2Subtitle') }}</p>
             </div>
           </div>
           <ParkingFloor
@@ -102,7 +97,7 @@
               <div class="sign-badge">
                 <span class="sign-level">2</span>
               </div>
-              <span class="sign-text">الدور</span>
+              <span class="sign-text">{{ $t('floor.floorLabel') }}</span>
             </div>
           </div>
         </div>
@@ -113,10 +108,8 @@
               <span class="floor-level">1</span>
             </div>
             <div class="floor-info">
-              <h3 class="floor-title">الدور 1</h3>
-              <p class="floor-subtitle">
-                المدخل المرجعي للمسار موجود أسفل المنتصف
-              </p>
+              <h3 class="floor-title">{{ $t('floor.floor1Title') }}</h3>
+              <p class="floor-subtitle">{{ $t('floor.floor1Subtitle') }}</p>
             </div>
             </div>
           <div class="route-origin-anchor" aria-hidden="true"></div>
@@ -133,7 +126,7 @@
     <div class="entry-point-container">
       <div class="route-origin-pill">
         <span class="route-origin-dot"></span>
-        نقطة الدخول
+        {{ $t('floor.entryPoint') }}
       </div>
     </div>
   </div>
@@ -492,7 +485,7 @@ onUnmounted(() => {
   align-items: center;
   gap: var(--space-xs);
   font-size: var(--text-xs);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--accent-primary);
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -600,7 +593,7 @@ onUnmounted(() => {
   border: 1px solid var(--accent-gold);
   color: var(--accent-gold);
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .route-origin-dot {
@@ -821,7 +814,7 @@ onUnmounted(() => {
 
 .sign-text {
   font-size: var(--text-2xs);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.1em;
