@@ -147,6 +147,7 @@
     "verifySending": "جاري الإرسال...",
     "verifyResend": "إعادة إرسال التأكيد",
     "profileName": "{name}",
+    "defaultName": "مستخدم",
     "badgeAdmin": "مدير",
     "badgeUnverified": "غير مؤكد",
     "editName": "الاسم",

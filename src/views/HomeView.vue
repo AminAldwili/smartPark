@@ -86,23 +86,17 @@ import { ref, onMounted, nextTick } from "vue";
 import { useSpotFromUrl } from "@/composables/useSpotFromUrl";
 import ParkingFloors from "@/components/ParkingFloors.vue";
 
-const { cleanSpotId, hasSlotParam } = useSpotFromUrl();
+const { cleanSpotId, hasSlotParam, isQrScan } = useSpotFromUrl();
 const floors = ref(null);
 
 onMounted(() => {
   nextTick(() => {
-    if (hasSlotParam.value && cleanSpotId.value) {
+    if (hasSlotParam.value && cleanSpotId.value && isQrScan.value) {
       setTimeout(() => {
-        const floorsComponent = floors.value;
-        if (floorsComponent?.scrollToSpot) {
-          floorsComponent.scrollToSpot(cleanSpotId.value);
-        }
+        floors.value?.scrollToSpot?.(cleanSpotId.value);
       }, 1000);
-    } else {
-      const el = floors.value?.$el;
-      if (el && el.scrollIntoView) {
-        el.scrollIntoView({ behavior: "smooth", block: "end" });
-      }
+    } else if (!hasSlotParam.value) {
+      floors.value?.$el?.scrollIntoView({ behavior: "smooth", block: "end" });
     }
   });
 });

@@ -331,7 +331,6 @@ html {
 
 body {
   margin: 0;
-  direction: rtl;
   min-width: clamp(280px, 85vw, 100%);
   font-family: "Tajawal", "Inter", "Segoe UI", sans-serif;
   font-weight: 400;
@@ -343,6 +342,9 @@ body {
   touch-action: manipulation;
   overflow-x: hidden;
 }
+
+html[dir="rtl"] body { direction: rtl; }
+html[dir="ltr"] body { direction: ltr; }
 
 html[lang="en"] body {
   font-family: "Inter", "Segoe UI", sans-serif;

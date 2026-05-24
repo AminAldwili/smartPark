@@ -95,7 +95,7 @@
           </svg>
         </div>
         <div class="profile-info">
-          <h2>{{ displayName || $t('auth.profileName', { name: '' }).trim() || $t('auth.profileName', { name: '' }) }}</h2>
+          <h2>{{ displayName || $t('auth.defaultName') }}</h2>
           <p>{{ userEmail }}</p>
           <span v-if="isAdmin" class="admin-badge">{{ $t('auth.badgeAdmin') }}</span>
           <span v-if="!isEmailVerified" class="unverified-badge">{{ $t('auth.badgeUnverified') }}</span>

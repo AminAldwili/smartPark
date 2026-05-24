@@ -147,6 +147,7 @@
     "verifySending": "Sending...",
     "verifyResend": "Resend verification",
     "profileName": "{name}",
+    "defaultName": "User",
     "badgeAdmin": "Admin",
     "badgeUnverified": "Unverified",
     "editName": "Name",
@@ -191,8 +192,7 @@
   },
   "userGrid": {
     "searchPlaceholder": "Search users...",
-    "userCount": "{count} user",
-    "userCount_plural": "{count} users",
+    "userCount": "{count} user | {count} users",
     "loading": "Loading data...",
     "retry": "Retry",
     "emptySearch": "No results found",

@@ -290,6 +290,22 @@ watch(activeSpotId, (newSpotId) => {
   }, SPOT_STATUS_CHECK_DELAY_MS);
 });
 
+watch([floor1Spots, floor2Spots], () => {
+  const activeId = activeSpotId.value;
+  if (!activeId) return;
+  const floor = getFloorFromSpotId(activeId);
+  const spots = floor === 2 ? floor2Spots : floor1Spots;
+  const spotData = spots.find(s => s.id === activeId);
+  if (spotData && spotData.status !== SPOT_STATUS.RESERVED) {
+    activeSpotId.value = null;
+    if (clearTimer.value) {
+      clearTimeout(clearTimer.value);
+      clearTimer.value = null;
+    }
+    activePath.value = null;
+  }
+});
+
 function getSpotCenterInFloor(floorElement, spotId) {
   const spotWrapper = floorElement.querySelector(`[data-spot-id="${spotId}"]`);
   if (!spotWrapper) return null;
@@ -357,6 +373,16 @@ function updateRampRect() {
 function clearPathTimeout() {
   if (clearTimer.value) clearTimeout(clearTimer.value);
   clearTimer.value = setTimeout(() => {
+    const activeId = activeSpotId.value;
+    if (activeId) {
+      const floor = getFloorFromSpotId(activeId);
+      const spots = floor === 2 ? floor2Spots : floor1Spots;
+      const spotData = spots.find(s => s.id === activeId);
+      if (spotData && spotData.status === SPOT_STATUS.RESERVED) {
+        clearPathTimeout();
+        return;
+      }
+    }
     activePath.value = null;
     clearTimer.value = null;
   }, PATH_TIMEOUT_MS);

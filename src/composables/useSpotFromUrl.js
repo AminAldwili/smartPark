@@ -22,10 +22,13 @@ export function useSpotFromUrl() {
 
   const hasSlotParam = computed(() => !!slotParam.value);
 
+  const isQrScan = computed(() => route.query.scan === '1');
+
   return {
     slotParam,
     cleanSpotId,
     targetFloor,
-    hasSlotParam
+    hasSlotParam,
+    isQrScan
   };
 }
