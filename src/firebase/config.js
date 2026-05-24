@@ -29,11 +29,12 @@ function checkConnection() {
       resolve(false);
       return;
     }
-    const connectedRef = ref(database, ".info/connected");
     const timer = setTimeout(() => resolve(false), 5000);
-    onValue(connectedRef, (snap) => {
-      clearTimeout(timer);
-      resolve(snap.val());
+    onValue(ref(database, ".info/connected"), (snap) => {
+      if (snap.val() === true) {
+        clearTimeout(timer);
+        resolve(true);
+      }
     }, () => {
       clearTimeout(timer);
       resolve(false);
