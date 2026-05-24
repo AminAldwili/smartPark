@@ -136,7 +136,7 @@
     "nameLabel": "Name",
     "namePlaceholder": "Enter your name",
     "emailLabel": "Email",
-    "emailPlaceholder": "example@email.com",
+    "emailPlaceholder": "your-email",
     "passwordLabel": "Password",
     "passwordPlaceholder": "••••••••",
     "loginBtn": "Sign In",
@@ -192,7 +192,8 @@
   },
   "userGrid": {
     "searchPlaceholder": "Search users...",
-    "userCount": "{count} user | {count} users",
+    "userCount": "{count} user",
+    "userCount_plural": "{count} users",
     "loading": "Loading data...",
     "retry": "Retry",
     "emptySearch": "No results found",
