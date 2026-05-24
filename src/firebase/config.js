@@ -31,13 +31,11 @@ function checkConnection() {
     }
     const connectedRef = ref(database, ".info/connected");
     const timer = setTimeout(() => resolve(false), 5000);
-    const unsub = onValue(connectedRef, (snap) => {
+    onValue(connectedRef, (snap) => {
       clearTimeout(timer);
-      unsub();
       resolve(snap.val());
     }, () => {
       clearTimeout(timer);
-      unsub();
       resolve(false);
     });
   });

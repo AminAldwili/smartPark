@@ -154,7 +154,7 @@
     "editNamePlaceholder": "Enter your name",
     "save": "Save",
     "editEmail": "Email",
-    "editEmailPlaceholder": "example@email.com",
+    "editEmailPlaceholder": "your-email",
     "confirmPassword": "Current password (to confirm)",
     "emailHint": "A confirmation link will be sent to the new email",
     "changePassword": "Change Password",
