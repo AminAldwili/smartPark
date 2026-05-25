@@ -31,7 +31,12 @@
               <span class="floor-level">2</span>
             </div>
             <div class="floor-info">
-              <h3 class="floor-title">{{ $t('floor.floor2Title') }}</h3>
+              <h3 class="floor-title">
+                {{ $t('floor.floor2Title') }}
+                <span class="avail-badge" :class="availClass(floor2Availability)">
+                  {{ floor2Availability.free }}/{{ floor2Availability.total }}
+                </span>
+              </h3>
               <p class="floor-subtitle">{{ $t('floor.floor2Subtitle') }}</p>
             </div>
           </div>
@@ -108,7 +113,12 @@
               <span class="floor-level">1</span>
             </div>
             <div class="floor-info">
-              <h3 class="floor-title">{{ $t('floor.floor1Title') }}</h3>
+              <h3 class="floor-title">
+                {{ $t('floor.floor1Title') }}
+                <span class="avail-badge" :class="availClass(floor1Availability)">
+                  {{ floor1Availability.free }}/{{ floor1Availability.total }}
+                </span>
+              </h3>
               <p class="floor-subtitle">{{ $t('floor.floor1Subtitle') }}</p>
             </div>
             </div>
@@ -216,6 +226,26 @@ watch(
   () => { updateSpotsFromStore(); },
   { immediate: true }
 );
+
+/**
+ * Floor availability counts for display badges.
+ * Uses the store getter which reacts to Firebase updates.
+ */
+const floor1Availability = computed(() => store.getters.getFloorAvailability(1));
+const floor2Availability = computed(() => store.getters.getFloorAvailability(2));
+
+/**
+ * Returns a CSS class for the availability badge based on occupancy.
+ * @param {{ free: number, total: number }} avail
+ * @returns {string}
+ */
+function availClass(avail) {
+  if (!avail || avail.total === 0) return "is-empty";
+  const pctFree = avail.free / avail.total;
+  if (pctFree <= 0.25) return "is-low";
+  if (pctFree <= 0.5) return "is-medium";
+  return "is-high";
+}
 
 /**
  * Main container element reference
@@ -601,6 +631,47 @@ onUnmounted(() => {
   font-size: var(--text-md);
   font-weight: 700;
   color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.avail-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px var(--space-sm);
+  border-radius: 999px;
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.6;
+  transition: background var(--duration-normal) var(--ease-out),
+              color var(--duration-normal) var(--ease-out),
+              box-shadow var(--duration-normal) var(--ease-out);
+}
+
+.avail-badge.is-high {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--spot-free);
+  box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.2);
+}
+
+.avail-badge.is-medium {
+  background: rgba(249, 115, 22, 0.15);
+  color: var(--spot-reserved);
+  box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.2);
+}
+
+.avail-badge.is-low {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--spot-occupied);
+  box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.2);
+}
+
+.avail-badge.is-empty {
+  background: rgba(107, 114, 128, 0.15);
+  color: var(--spot-maintenance);
+  box-shadow: inset 0 0 0 1px rgba(107, 114, 128, 0.2);
 }
 
 .floor-subtitle {

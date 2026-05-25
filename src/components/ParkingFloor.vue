@@ -40,7 +40,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import ParkingSpot from "@/components/ParkingSpot.vue";
 import {
   AISLE_X_PERCENT,
@@ -206,12 +206,28 @@ function onSpotClick(payload) {
 }
 
 onMounted(() => {
-  if (props.spotsProp && props.spotsProp.length) {
-    spots.value = props.spotsProp;
+  updateSpots();
+});
+
+/**
+ * Watches for spot prop changes (e.g., when Firebase data arrives after mount).
+ * Updates the local spots ref so the template re-renders.
+ */
+watch(
+  () => props.spotsProp,
+  (newVal) => {
+    updateSpots(newVal);
+  },
+);
+
+function updateSpots(propVal) {
+  const source = propVal ?? props.spotsProp;
+  if (source && source.length) {
+    spots.value = source;
   } else {
     spots.value = generateDefaultSpots();
   }
-});
+}
 </script>
 
 <style scoped>

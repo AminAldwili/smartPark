@@ -114,7 +114,7 @@ function parseFloor(data, floorPath, defaultSpots, target, metaTarget) {
     Object.keys(defaultSpots).forEach(spot => {
       const spotData = data[floorPath][spot];
       target[spot] = (spotData && spotData.status !== undefined)
-        ? spotData.status
+        ? Number(spotData.status)
         : SPOT_STATUS.FREE;
       metaTarget[spot] = { updatedAt: spotData?.updatedAt ?? null };
     });
@@ -229,6 +229,21 @@ export default createStore({
       const meta = state.spotMeta[`floor${floorIndex}`]?.[spotId];
       if (!meta?.updatedAt) return null;
       return Date.now() - meta.updatedAt;
+    },
+
+    /**
+     * Get free/total counts for a floor.
+     * @param {Object} state - Store state
+     * @returns {Function} Getter function
+     */
+    getFloorAvailability: (state) => (floorIndex) => {
+      const spots = state.spots[`floor${floorIndex}`];
+      if (!spots) return { total: 0, free: 0 };
+      const values = Object.values(spots);
+      return {
+        total: values.length,
+        free: values.filter(v => Number(v) === SPOT_STATUS.FREE).length,
+      };
     }
   },
 
