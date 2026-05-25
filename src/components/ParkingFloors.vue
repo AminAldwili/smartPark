@@ -188,7 +188,7 @@ const floor2SpotsFromStore = computed(() => store.getters.getFloor2Spots);
 function buildYPositions(count) {
   return Array.from(
     { length: count },
-    (_, idx) => ((idx + 1) / (count + 1)) * 100,
+    (_, idx) => ((idx + 0.5) / count) * 100,
   ).reverse();
 }
 
