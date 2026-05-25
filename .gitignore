@@ -53,3 +53,10 @@ trace.json
 
 # Temporary screenshots
 *.screenshot.png
+
+# Test snapshots directory
+test-snapshots/
+
+# Development screenshot artifacts
+app-*.png
+spots-*.png
