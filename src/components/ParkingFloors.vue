@@ -639,39 +639,41 @@ onUnmounted(() => {
 .avail-badge {
   display: inline-flex;
   align-items: center;
-  padding: 1px var(--space-sm);
+  padding: 2px var(--space-sm);
   border-radius: 999px;
   font-size: var(--text-2xs);
   font-weight: 700;
-  letter-spacing: 0.02em;
-  line-height: 1.6;
+  line-height: 1;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border: 1px solid;
   transition: background var(--duration-normal) var(--ease-out),
               color var(--duration-normal) var(--ease-out),
-              box-shadow var(--duration-normal) var(--ease-out);
+              border-color var(--duration-normal) var(--ease-out);
 }
 
 .avail-badge.is-high {
-  background: rgba(16, 185, 129, 0.15);
+  background: rgba(16, 185, 129, 0.12);
   color: var(--spot-free);
-  box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.25);
 }
 
 .avail-badge.is-medium {
-  background: rgba(249, 115, 22, 0.15);
+  background: rgba(249, 115, 22, 0.12);
   color: var(--spot-reserved);
-  box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.2);
+  border-color: rgba(249, 115, 22, 0.25);
 }
 
 .avail-badge.is-low {
-  background: rgba(239, 68, 68, 0.15);
+  background: rgba(239, 68, 68, 0.12);
   color: var(--spot-occupied);
-  box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.25);
 }
 
 .avail-badge.is-empty {
-  background: rgba(107, 114, 128, 0.15);
+  background: rgba(107, 114, 128, 0.12);
   color: var(--spot-maintenance);
-  box-shadow: inset 0 0 0 1px rgba(107, 114, 128, 0.2);
+  border-color: rgba(107, 114, 128, 0.25);
 }
 
 .floor-subtitle {
