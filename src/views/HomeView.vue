@@ -83,17 +83,34 @@
 
 <script setup>
 import { ref, onMounted, nextTick } from "vue";
+import { useStore } from "vuex";
+import { useI18n } from "vue-i18n";
 import { useSpotFromUrl } from "@/composables/useSpotFromUrl";
+import { useToast } from "@/composables/useToast";
 import ParkingFloors from "@/components/ParkingFloors.vue";
+import { getFloorFromSpotId, SPOT_LABEL_KEYS, SPOT_STATUS } from "@/constants";
 
-const { cleanSpotId, hasSlotParam, isQrScan } = useSpotFromUrl();
+const { cleanSpotId, hasSlotParam } = useSpotFromUrl();
 const floors = ref(null);
+const store = useStore();
+const toast = useToast();
+const { t } = useI18n();
 
 onMounted(() => {
   nextTick(() => {
-    if (hasSlotParam.value && cleanSpotId.value && isQrScan.value) {
+    if (hasSlotParam.value && cleanSpotId.value) {
       setTimeout(() => {
         floors.value?.scrollToSpot?.(cleanSpotId.value);
+
+        // Show toast with spot status
+        const spotId = cleanSpotId.value;
+        const floor = getFloorFromSpotId(spotId);
+        const spots = floor === 1
+          ? store.getters.getFloor1Spots
+          : store.getters.getFloor2Spots;
+        const status = spots[spotId] ?? SPOT_STATUS.FREE;
+        const labelKey = SPOT_LABEL_KEYS[status] || "spot.free";
+        toast.success(`الموقف ${spotId}: ${t(labelKey)}`, 5000);
       }, 1000);
     } else if (!hasSlotParam.value) {
       floors.value?.$el?.scrollIntoView({ behavior: "smooth", block: "end" });

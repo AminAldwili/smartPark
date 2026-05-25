@@ -151,6 +151,7 @@ import {
   AISLE_X_PERCENT,
   FLOOR_CONFIG,
   PATH_TIMEOUT_MS,
+  QR_PATH_TIMEOUT_MS,
   SPOT_STATUS,
   SPOT_SCROLL_DELAY_MS,
   SPOT_STATUS_CHECK_DELAY_MS,
@@ -296,6 +297,13 @@ const rampRect = ref(null);
 const clearTimer = ref(null);
 
 /**
+ * Timestamp when the current path was first activated.
+ * Used to enforce QR_PATH_TIMEOUT_MS hard cap.
+ * @type {import('vue').Ref<number>}
+ */
+const pathStartTime = ref(0);
+
+/**
  * Currently active/selected spot ID
  * @type {import('vue').Ref<string|null>}
  */
@@ -306,7 +314,7 @@ watch(activeSpotId, (newSpotId) => {
 
   setTimeout(() => {
     const floor = getFloorFromSpotId(newSpotId);
-    const spots = floor === 2 ? floor2Spots : floor1Spots;
+    const spots = floor === 2 ? floor2Spots.value : floor1Spots.value;
     const spotData = spots.find(s => s.id === newSpotId);
 
     if (spotData && spotData.status !== SPOT_STATUS.RESERVED) {
@@ -316,6 +324,7 @@ watch(activeSpotId, (newSpotId) => {
         clearTimer.value = null;
       }
       activePath.value = null;
+      pathStartTime.value = 0;
     }
   }, SPOT_STATUS_CHECK_DELAY_MS);
 });
@@ -324,7 +333,7 @@ watch([floor1Spots, floor2Spots], () => {
   const activeId = activeSpotId.value;
   if (!activeId) return;
   const floor = getFloorFromSpotId(activeId);
-  const spots = floor === 2 ? floor2Spots : floor1Spots;
+  const spots = floor === 2 ? floor2Spots.value : floor1Spots.value;
   const spotData = spots.find(s => s.id === activeId);
   if (spotData && spotData.status !== SPOT_STATUS.RESERVED) {
     activeSpotId.value = null;
@@ -333,6 +342,7 @@ watch([floor1Spots, floor2Spots], () => {
       clearTimer.value = null;
     }
     activePath.value = null;
+    pathStartTime.value = 0;
   }
 });
 
@@ -402,11 +412,34 @@ function updateRampRect() {
 
 function clearPathTimeout() {
   if (clearTimer.value) clearTimeout(clearTimer.value);
+
+  const elapsed = Date.now() - pathStartTime.value;
+  const remaining = QR_PATH_TIMEOUT_MS - elapsed;
+
+  if (remaining <= 0) {
+    // Hard timeout reached — revert reserved spot to free
+    const activeId = activeSpotId.value;
+    if (activeId) {
+      const floor = getFloorFromSpotId(activeId);
+      const spots = floor === 2 ? floor2Spots.value : floor1Spots.value;
+      const spotData = spots.find(s => s.id === activeId);
+      if (spotData && spotData.status === SPOT_STATUS.RESERVED) {
+        store.dispatch("updateSpotStatus", { spotId: activeId, status: SPOT_STATUS.FREE });
+      }
+    }
+    activePath.value = null;
+    activeSpotId.value = null;
+    clearTimer.value = null;
+    pathStartTime.value = 0;
+    return;
+  }
+
+  const waitTime = Math.min(PATH_TIMEOUT_MS, remaining);
   clearTimer.value = setTimeout(() => {
     const activeId = activeSpotId.value;
     if (activeId) {
       const floor = getFloorFromSpotId(activeId);
-      const spots = floor === 2 ? floor2Spots : floor1Spots;
+      const spots = floor === 2 ? floor2Spots.value : floor1Spots.value;
       const spotData = spots.find(s => s.id === activeId);
       if (spotData && spotData.status === SPOT_STATUS.RESERVED) {
         clearPathTimeout();
@@ -415,7 +448,8 @@ function clearPathTimeout() {
     }
     activePath.value = null;
     clearTimer.value = null;
-  }, PATH_TIMEOUT_MS);
+    pathStartTime.value = 0;
+  }, waitTime);
 }
 
 function computePathCoords(payload, containerRect, floorRectData) {
@@ -432,6 +466,8 @@ function computePathCoords(payload, containerRect, floorRectData) {
 }
 
 function handleRequestPath(payload) {
+  pathStartTime.value = Date.now();
+
   if (!containerSize.value.width || !containerSize.value.height) {
     updateContainerSize();
   }

@@ -20,6 +20,9 @@ export const SPOT_SCROLL_DELAY_MS = 1000
 /** Delay in ms for spot status check after activation */
 export const SPOT_STATUS_CHECK_DELAY_MS = 500
 
+/** Max time in ms before a reserved spot auto-reverts to free (2 minutes) */
+export const QR_PATH_TIMEOUT_MS = 120000
+
 // ============================================================================
 // Tooltip
 // ============================================================================
