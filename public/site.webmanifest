@@ -1,18 +1,18 @@
 {
   "name": "Smart Parking — لوحة إدارة المواقف",
   "short_name": "Smart Parking",
-  "start_url": "/parking-project/",
+  "start_url": "/parkSmart/",
   "display": "standalone",
   "background_color": "#0f1419",
   "theme_color": "#0f1419",
   "icons": [
     {
-      "src": "/parking-project/app_icon.png",
+      "src": "/parkSmart/app_icon.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/parking-project/app_icon.png",
+      "src": "/parkSmart/app_icon.png",
       "sizes": "512x512",
       "type": "image/png"
     }
