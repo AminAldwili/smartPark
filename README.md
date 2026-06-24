@@ -6,7 +6,7 @@
 
 Real-time smart parking management with multi-floor visualization, Firebase RTDB sync, path navigation, and admin controls.
 
-> **Live demo**: [https://aminaldwili.github.io/parking-project/](https://aminaldwili.github.io/parking-project/)
+> **Live demo**: [https://aminaldwili.github.io/parking-project/](https://aminaldwili.github.io/smartpark)
 
 ---
 
