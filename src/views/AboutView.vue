@@ -75,6 +75,15 @@
             <span class="tech-item__label">{{ $t('about.techBrowser') }}</span>
             <span class="tech-item__desc">{{ $t('about.techBrowserDesc') }}</span>
           </div>
+          <div class="tech-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="4" y="4" width="16" height="16" rx="2" />
+              <path d="M9 9h6v6H9z" />
+              <path d="M12 2v2M12 20v2M2 12h2M20 12h2M6 2v2M18 2v2M6 20v2M18 20v2M2 6h2M2 18h2M20 6h2M20 18h2" />
+            </svg>
+            <span class="tech-item__label">{{ $t('about.techHardware') }}</span>
+            <span class="tech-item__desc">{{ $t('about.techHardwareDesc') }}</span>
+          </div>
         </div>
       </div>
 
@@ -222,8 +231,8 @@ const appDownloadUrl = computed(() => "./ParkSmart.apk");
 }
 
 .board-header svg {
-  width: 14px;
-  height: 14px;
+  width: var(--icon-xs);
+  height: var(--icon-xs);
 }
 
 .board-content h2 {
@@ -353,8 +362,8 @@ const appDownloadUrl = computed(() => "./ParkSmart.apk");
 }
 
 .download-btn svg {
-  width: 20px;
-  height: 20px;
+  width: var(--icon-sm);
+  height: var(--icon-sm);
 }
 
 .download-btn:hover {
@@ -453,8 +462,8 @@ const appDownloadUrl = computed(() => "./ParkSmart.apk");
 }
 
 .tech-item svg {
-  width: var(--icon-sm);
-  height: var(--icon-sm);
+  width: var(--icon-md);
+  height: var(--icon-md);
   color: var(--accent-primary);
 }
 

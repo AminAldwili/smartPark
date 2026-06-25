@@ -48,6 +48,8 @@
     "techAdminDesc": "Manage spots, users & gates",
     "techBrowser": "E2E Testing",
     "techBrowserDesc": "Puppeteer + Obscura",
+    "techHardware": "Hardware",
+    "techHardwareDesc": "ESP32 microcontrollers for gate control & IR sensors",
     "version": "Version 0.1.0",
     "appTitle": "Mobile App",
     "appDesc": "Download the ParkSmart mobile app for Android to manage parking on the go.",

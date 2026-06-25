@@ -48,6 +48,8 @@
     "techAdminDesc": "إدارة المواقف والمستخدمين والبوابات",
     "techBrowser": "اختبار آلي",
     "techBrowserDesc": "Puppeteer + Obscura",
+    "techHardware": "الأجهزة",
+    "techHardwareDesc": "متحكمات ESP32 للتحكم في البوابات وأجهزة الاستشعار",
     "version": "الإصدار 0.1.0",
     "appTitle": "التطبيق",
     "appDesc": "حمّل تطبيق ParkSmart للأندرويد لإدارة المواقف من هاتفك.",
