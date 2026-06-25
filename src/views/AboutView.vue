@@ -272,8 +272,8 @@ const appDownloadUrl = computed(() => "./ParkSmart.apk");
 }
 
 .feature-icon {
-  width: var(--icon-lg);
-  height: var(--icon-lg);
+  width: var(--icon-xl);
+  height: var(--icon-xl);
   margin: 0 auto var(--space-sm);
   padding: var(--space-md);
   border-radius: var(--radius-md);
