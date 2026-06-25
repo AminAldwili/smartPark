@@ -7,15 +7,15 @@
     "mainAria": "القائمة الرئيسية"
   },
   "brand": {
-    "kicker": "Smart Parking",
-    "title": "لوحة إدارة المواقف"
+    "kicker": "Park smartly",
+    "title": "ParkSmart"
   },
   "firebase": {
     "banner": "تعذر الاتصال بقاعدة البيانات — بعض الميزات غير متاحة"
   },
   "home": {
-    "badge": "Smart Parking Flow",
-    "heading": "اختيار الموقف صار أوضح وأسرع",
+    "badge": "ParkSmart",
+    "heading": "مواقف ذكية بسيطة — اعثر، احجز، وتنقل إلى موقفك بثوانٍ",
     "description": "اضغط على أي موقف ليظهر لك المسار المنطلق من أعلى منتصف الدور الأول إلى موقع الموقف المختار مباشرة.",
     "statsAria": "Parking summary",
     "statFloors": "أدوار",
@@ -37,7 +37,7 @@
     "statsFloors": "أدوار",
     "statsGates": "بوابات",
     "statsSpotsValue": "15",
-    "statsFloorsValue": "3",
+    "statsFloorsValue": "2",
     "statsGatesValue": "3",
     "techTitle": "التقنيات المستخدمة",
     "techFrontend": "واجهة أمامية",
@@ -48,7 +48,10 @@
     "techAdminDesc": "إدارة المواقف والمستخدمين والبوابات",
     "techBrowser": "اختبار آلي",
     "techBrowserDesc": "Puppeteer + Obscura",
-    "version": "الإصدار 0.1.0"
+    "version": "الإصدار 0.1.0",
+    "appTitle": "التطبيق",
+    "appDesc": "حمّل تطبيق ParkSmart للأندرويد لإدارة المواقف من هاتفك.",
+    "appDownloadBtn": "تحميل التطبيق"
   },
   "floor": {
     "interactiveLayout": "Interactive Layout",
@@ -242,11 +245,11 @@
     "permissionUpdateError": "حدث خطأ أثناء تحديث الصلاحيات"
   },
   "meta": {
-    "title": "لوحة إدارة المواقف | Smart Parking",
+    "title": "ParkSmart",
     "description": "نظام إدارة مواقف ذكي مع تتبع المسار وعرض الحالة في الوقت الفعلي",
     "noscript": "We're sorry but this app doesn't work properly without JavaScript enabled. Please enable it to continue.",
     "notFoundTitle": "جاري التوجيه...",
-    "manifestName": "Smart Parking — لوحة إدارة المواقف",
-    "manifestShortName": "Smart Parking"
+    "manifestName": "ParkSmart",
+    "manifestShortName": "ParkSmart"
   }
 }

@@ -1,6 +1,6 @@
 {
-  "name": "Smart Parking — لوحة إدارة المواقف",
-  "short_name": "Smart Parking",
+  "name": "ParkSmart",
+  "short_name": "ParkSmart",
   "start_url": "/parking-project/",
   "display": "standalone",
   "background_color": "#0f1419",

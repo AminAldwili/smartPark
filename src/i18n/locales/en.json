@@ -7,15 +7,15 @@
     "mainAria": "Main navigation"
   },
   "brand": {
-    "kicker": "Smart Parking",
-    "title": "Parking Management Panel"
+    "kicker": "Park smartly",
+    "title": "ParkSmart"
   },
   "firebase": {
     "banner": "Cannot connect to database — some features are unavailable"
   },
   "home": {
-    "badge": "Smart Parking Flow",
-    "heading": "Finding your spot is now clearer and faster",
+    "badge": "ParkSmart",
+    "heading": "Smart parking made simple — find, reserve, and navigate to your spot in seconds",
     "description": "Click any parking spot to see a visual path from the top center of the first floor directly to your selected spot.",
     "statsAria": "Parking summary",
     "statFloors": "Floors",
@@ -37,7 +37,7 @@
     "statsFloors": "Floors",
     "statsGates": "Gates",
     "statsSpotsValue": "15",
-    "statsFloorsValue": "3",
+    "statsFloorsValue": "2",
     "statsGatesValue": "3",
     "techTitle": "Built With",
     "techFrontend": "Frontend",
@@ -48,7 +48,10 @@
     "techAdminDesc": "Manage spots, users & gates",
     "techBrowser": "E2E Testing",
     "techBrowserDesc": "Puppeteer + Obscura",
-    "version": "Version 0.1.0"
+    "version": "Version 0.1.0",
+    "appTitle": "Mobile App",
+    "appDesc": "Download the ParkSmart mobile app for Android to manage parking on the go.",
+    "appDownloadBtn": "Download APK"
   },
   "floor": {
     "interactiveLayout": "Interactive Layout",
@@ -243,11 +246,11 @@
     "permissionUpdateError": "An error occurred while updating permissions"
   },
   "meta": {
-    "title": "Parking Management Panel | Smart Parking",
+    "title": "ParkSmart",
     "description": "Smart parking management system with path tracking and real-time status display",
     "noscript": "We're sorry but this app doesn't work properly without JavaScript enabled. Please enable it to continue.",
     "notFoundTitle": "Redirecting...",
-    "manifestName": "Smart Parking — Parking Management Panel",
-    "manifestShortName": "Smart Parking"
+    "manifestName": "ParkSmart",
+    "manifestShortName": "ParkSmart"
   }
 }

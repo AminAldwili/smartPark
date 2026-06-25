@@ -133,12 +133,40 @@
         </div>
       </div>
 
+      <div class="app-download-section">
+        <div class="app-download-card">
+          <div class="app-download-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+          </div>
+          <h3>{{ $t('about.appTitle') }}</h3>
+          <p>{{ $t('about.appDesc') }}</p>
+          <a :href="appDownloadUrl" class="download-btn" download>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            {{ $t('about.appDownloadBtn') }}
+          </a>
+        </div>
+      </div>
+
       <div class="about-footer">
         <span class="version-badge">{{ $t('about.version') }}</span>
       </div>
     </div>
   </div>
 </template>
+
+<script setup>
+import { computed } from "vue";
+
+const appDownloadUrl = computed(() => "./ParkSmart.apk");
+</script>
 
 <style scoped>
 .about {
@@ -262,6 +290,84 @@
   color: var(--text-tertiary);
 }
 
+.app-download-section {
+  margin-top: var(--space-lg);
+}
+
+.app-download-card {
+  padding: var(--space-xl);
+  border-radius: var(--radius-md);
+  background: var(--asphalt-dark);
+  border: 1px solid var(--glass-border);
+  text-align: center;
+  transition: all var(--duration-normal) var(--ease-out);
+}
+
+.app-download-card:hover {
+  border-color: var(--aisle-border);
+  box-shadow: var(--shadow-md);
+}
+
+.app-download-icon {
+  width: var(--icon-lg);
+  height: var(--icon-lg);
+  margin: 0 auto var(--space-sm);
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  background: var(--accent-glow);
+  color: var(--accent-primary);
+}
+
+.app-download-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.app-download-card h3 {
+  margin: 0 0 var(--space-2xs);
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.app-download-card p {
+  margin: 0 0 var(--space-lg);
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+}
+
+.download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-xl);
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--accent-primary);
+  color: white;
+  font-size: var(--text-base);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.download-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.download-btn:hover {
+  background: var(--accent-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.download-btn:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
 @media (max-width: 768px) {
   .about-card {
     padding: var(--space-xl);
@@ -277,6 +383,11 @@
 
   .tech-grid {
     grid-template-columns: 1fr;
+  }
+
+  .download-btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 

@@ -326,7 +326,7 @@ function updateSpots(propVal) {
 
 .group-label {
   position: absolute;
-  top: var(--space-xs);
+  top: calc(-1 * var(--space-lg));
   transform: translateX(-50%);
   min-width: clamp(30px, 8vw, 36px);
   text-align: center;
