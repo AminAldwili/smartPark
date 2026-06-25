@@ -11,7 +11,6 @@ const store = useStore();
 const { t } = useI18n();
 
 const isAdmin = computed(() => store.getters["auth/isUserAdmin"]);
-const firebaseError = computed(() => store.getters.hasFirebaseError);
 const currentLocale = computed(() => store.getters.currentLocale);
 
 onMounted(() => {
@@ -104,14 +103,6 @@ watch(
         <LanguageToggle />
         <ThemeToggle />
       </nav>
-      <div v-if="firebaseError" class="firebase-banner" role="alert">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10" />
-          <line x1="12" y1="8" x2="12" y2="12" />
-          <line x1="12" y1="16" x2="12.01" y2="16" />
-        </svg>
-        <span>{{ $t('firebase.banner') }}</span>
-      </div>
     </header>
     <main class="page-content">
       <router-view />
